@@ -1,21 +1,25 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { FaUser, FaQrcode, FaTint } from 'react-icons/fa';
 import { MdHome, MdMap, MdCardGiftcard, MdStar, MdShoppingBag } from 'react-icons/md';
 import logo from '../assets/icon/icon.webp';
 import './EcoApp.css';
 
 const Home = () => {
+  const location = useLocation();
+  const { pathname } = location;
+
   return (
     <div className="app-container">
       <header className="header">
         <div className="logo-container">
-        <img src={logo} alt="Logo" className="app-logo" />
+          <img src={logo} alt="Logo" className="app-logo" />
         </div>
         <nav className="navigation">
-          <button className="nav-item active">Home</button>
-          <button className="nav-item">Pontos</button>
-          <button className="nav-item">Mapa</button>
-          <button className="nav-item">Recompensas</button>
+          <Link to="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`}>Home</Link>
+          <Link to="/points" className={`nav-item ${pathname === '/points' ? 'active' : ''}`}>Pontos</Link>
+          <Link to="/map" className={`nav-item ${pathname === '/map' ? 'active' : ''}`}>Mapa</Link>
+          <Link to="/rewards" className={`nav-item ${pathname === '/rewards' ? 'active' : ''}`}>Recompensas</Link>
         </nav>
       </header>
 
@@ -97,26 +101,26 @@ const Home = () => {
 
       <footer className="footer">
         <div className="footer-nav">
-          <button className="footer-btn active">
+          <Link to="/" className={`footer-btn ${pathname === '/' ? 'active' : ''}`}>
             <MdHome />
             <span>Home</span>
-          </button>
-          <button className="footer-btn">
+          </Link>
+          <Link to="/map" className={`footer-btn ${pathname === '/map' ? 'active' : ''}`}>
             <MdMap />
             <span>Mapa</span>
-          </button>
-          <button className="footer-btn">
+          </Link>
+          <Link to="/points" className={`footer-btn ${pathname === '/points' ? 'active' : ''}`}>
             <MdStar />
             <span>Pontos</span>
-          </button>
-          <button className="footer-btn">
+          </Link>
+          <Link to="/rewards" className={`footer-btn ${pathname === '/rewards' ? 'active' : ''}`}>
             <MdCardGiftcard />
             <span>Recompensas</span>
-          </button>
-          <button className="footer-btn">
+          </Link>
+          <Link to="/market" className={`footer-btn ${pathname === '/market' ? 'active' : ''}`}>
             <MdShoppingBag />
             <span>Mercado</span>
-          </button>
+          </Link>
         </div>
       </footer>
     </div>

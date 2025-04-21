@@ -1,29 +1,32 @@
-import React from 'react';
+// src/router/router.jsx
 import { createBrowserRouter } from 'react-router-dom';
+import Home from '../pages/Home.jsx';
+import Points from '../pages/PointsPage';
+import Map from '../pages/MapPage';
+import Rewards from '../pages/RewardsPage';
+import Market from '../pages/MarketPage/index.jsx';
 
-// Importando páginas
-import Home from '../pages/Home';
-
-// Criando as rotas da aplicação
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Home />,
+    path: "/",
+    element: <Home />
   },
-  // Aqui você pode adicionar mais rotas no futuro
-  // Exemplo:
-  // {
-  //   path: '/pontos',
-  //   element: <Pontos />,
-  // },
-  // {
-  //   path: '/mapa',
-  //   element: <Mapa />,
-  // },
-  // {
-  //   path: '/recompensas',
-  //   element: <Recompensas />,
-  // },
+  {
+    path: "/points",
+    element: <Points />
+  },
+  {
+    path: "/map",
+    element: <Map />
+  },
+  {
+    path: "/rewards",
+    element: <Rewards />
+  },
+  {
+    path: "/market",
+    element: <Market />
+  }
 ]);
 
 export default router;
