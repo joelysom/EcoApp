@@ -1,0 +1,1233 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #f5f7fa;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* HEADER */
+.header {
+  background-color: #ffffff;
+  padding: 16px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.logo-container {
+  margin-bottom: 12px;
+}
+
+.app-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  padding: 8px 0;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+}
+
+.nav-item.active {
+  color: #1155cc;
+  font-weight: 600;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background-color: #1155cc;
+  border-radius: 1.5px;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.points-card {
+  background: linear-gradient(90deg, #1155cc 0%, #4a2f9f 100%);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.points-value {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.points-label {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+/* RECENT ACTIVITIES */
+.activities-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.activity-card {
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+}
+
+.oil-disposal {
+  background: linear-gradient(135deg, #88cc14 0%, #a2e168 100%);
+}
+
+.qr-code {
+  background: linear-gradient(135deg, #f5843e 0%, #ff9259 100%);
+  color: white;
+}
+
+.activity-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.oil-disposal .activity-icon {
+  color: #006400;
+}
+
+.qr-icon {
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  color: #f5843e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.activity-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.activity-info p {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* COMMUNITY RANKING */
+.ranking-list {
+  margin-bottom: 24px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.rank-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.rank-1 .rank-number {
+  background-color: #f1c232;
+  color: white;
+}
+
+.rank-2 .rank-number {
+  background-color: #4990e2;
+  color: white;
+}
+
+.rank-3 .rank-number {
+  background-color: #42b45d;
+  color: white;
+}
+
+.rank-user-avatar {
+  width: 32px;
+  height: 32px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: #666;
+}
+
+.rank-user-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.rank-points {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1155cc;
+}
+
+/* LOCAL OFFERS */
+.offers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.offer-card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.offer-image {
+  height: 120px;
+  background-color: #35c77e;
+  background-image: linear-gradient(45deg, #3aca7f 25%, #35c77e 25%, #35c77e 75%, #3aca7f 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.offer-content {
+  padding: 16px;
+}
+
+.offer-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.offer-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.offer-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.offer-button {
+  background-color: #1155cc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* FOOTER */
+.footer {
+  background-color: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  padding: 12px 20px;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.footer-btn svg {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.footer-btn.active {
+  color: #1155cc;
+}
+
+/* Additional styles for new pages */
+
+/* POINTS PAGE STYLES */
+.history-list {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.history-item {
+  display: flex;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.oil-icon {
+  background-color: #88cc14;
+  color: white;
+}
+
+.recycle-icon {
+  background-color: #1155cc;
+  color: white;
+}
+
+.qr-icon {
+  background-color: #f5843e;
+  color: white;
+}
+
+.plant-icon {
+  background-color: #42b45d;
+  color: white;
+}
+
+.history-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-details h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.history-details p {
+  font-size: 12px;
+  color: #666;
+}
+
+.history-points {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.points-earned {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1155cc;
+}
+
+.history-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.info-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.info-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.info-icon {
+  width: 36px;
+  height: 36px;
+  background-color: #f5f7fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 16px;
+  color: #1155cc;
+}
+
+.info-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.info-content p {
+  font-size: 12px;
+  color: #666;
+}
+
+/* MAP PAGE STYLES */
+.map-container {
+  position: relative;
+  margin-bottom: 20px;
+  height: 220px;
+}
+
+.map-placeholder {
+  height: 100%;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.map-center-marker {
+  width: 36px;
+  height: 36px;
+  background-color: #1155cc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.map-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-control-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  color: #333;
+}
+
+/* MAP PAGE STYLES (continued) */
+.ecopoints-list {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.ecopoint-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.ecopoint-item:last-child {
+  border-bottom: none;
+}
+
+.ecopoint-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 18px;
+  background-color: #f5f7fa;
+  color: #1155cc;
+}
+
+.ecopoint-info {
+  flex: 1;
+}
+
+.ecopoint-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ecopoint-info p {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.ecopoint-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.service-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background-color: #f5f7fa;
+  border-radius: 10px;
+  color: #666;
+}
+
+.directions-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #1155cc;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-card {
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.event-date {
+  width: 48px;
+  height: 48px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.event-day {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.event-month {
+  font-size: 12px;
+  color: #666;
+}
+
+.event-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.event-info p {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.event-points {
+  font-size: 12px;
+  color: #1155cc;
+  font-weight: 500;
+}
+
+/* REWARDS PAGE STYLES */
+.rewards-filter {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  background-color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  align-self: flex-end;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.category-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+.category-tab {
+  background-color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.category-tab.active {
+  background-color: #1155cc;
+  color: white;
+}
+
+.rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reward-card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-img {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reward-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.reward-vendor {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.reward-description {
+  font-size: 14px;
+  color: #333;
+}
+
+.reward-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reward-points {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1155cc;
+}
+
+.reward-btn {
+  background-color: #1155cc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.my-rewards-list {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.my-reward-item {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.my-reward-item:last-child {
+  border-bottom: none;
+}
+
+.my-reward-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.my-reward-info {
+  flex: 1;
+}
+
+.my-reward-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.my-reward-info p {
+  font-size: 12px;
+  color: #666;
+}
+
+.my-reward-action {
+  color: #999;
+}
+
+/* MARKET PAGE STYLES */
+.search-container {
+  margin-bottom: 16px;
+}
+
+.search-bar {
+  background-color: white;
+  border-radius: 24px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.search-icon {
+  color: #999;
+  margin-right: 8px;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 14px;
+}
+
+.market-stats {
+  margin-bottom: 24px;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.category-icon {
+  width: 48px;
+  height: 48px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-size: 20px;
+  color: #1155cc;
+}
+
+.category-name {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.view-all-btn {
+  background: none;
+  border: none;
+  color: #1155cc;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.product-card {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.product-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.product-badge.eco {
+  background-color: #88cc14;
+  color: white;
+}
+
+.product-badge.organic {
+  background-color: #42b45d;
+  color: white;
+}
+
+.product-image {
+  height: 100px;
+  background-color: #f5f7fa;
+}
+
+.product-details {
+  padding: 12px;
+  position: relative;
+}
+
+.product-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.product-vendor {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.product-price-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-price {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.product-points {
+  font-size: 12px;
+  color: #1155cc;
+}
+
+.add-to-cart-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #1155cc;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+}
+
+.partners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.partner-card {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  padding: 16px;
+}
+
+.partner-logo {
+  width: 60px;
+  height: 60px;
+  background-color: #f5f7fa;
+  border-radius: 12px;
+  margin-right: 12px;
+}
+
+.partner-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.partner-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.rating-count {
+  margin-left: 4px;
+  color: #666;
+}
+
+.partner-info p {
+  font-size: 12px;
+  color: #666;
+}
+
+
+/* Estilos adicionais para a página de recompensas aprimorada */
+
+/* Badge de notificação */
+.logo-container {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff3b30;
+  color: white;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* Cartão de notificação */
+.notification-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+}
+
+.notification-icon {
+  color: #1155cc;
+  font-size: 20px;
+  margin-right: 12px;
+}
+
+.notification-text h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.notification-text p {
+  font-size: 12px;
+  color: #666;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Badge de novo */
+.new-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #ff3b30;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.reward-img {
+  position: relative;
+}
+
+/* Melhoria no cartão de recompensa */
+.reward-card {
+  transition: transform 0.2s;
+}
+
+.reward-card:hover {
+  transform: translateY(-2px);
+}
+
+.reward-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reward-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.reward-info-btn {
+  background: none;
+  border: 1px solid #1155cc;
+  color: #1155cc;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.reward-share-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f5f7fa;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  cursor: pointer;
+}
+
+.reward-redeem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.reward-expiry {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.reward-code {
+  font-size: 12px;
+  background-color: #f5f7fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+/* Modal de sobreposição */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Estilo para modais */
+.reward-detail-modal,
+.redeem-modal,
+.filter-modal {
+  background-color: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+}
+
+.modal-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+}
+
+.modal-content {
+  padding: 16px;
+}
+
+/* Detalhes da recompensa */
+.reward-detail-img {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.reward-detail-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.reward-detail-vendor {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.reward-detail-section {
+  margin-bottom: 16px;
+}
