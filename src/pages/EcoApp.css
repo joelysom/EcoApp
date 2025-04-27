@@ -282,6 +282,32 @@
   cursor: pointer;
 }
 
+/* Adicione este código ao final do seu arquivo EcoApp.css */
+
+.see-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.see-more-button {
+  background-color: #1155cc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+
+.see-more-button:hover {
+  background-color: #0e44a3;
+}
+
 /* FOOTER */
 .footer {
   background-color: white;

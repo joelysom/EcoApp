@@ -1,0 +1,183 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a2e7e 0%, #0a2e7e 40%, #ffd700 100%);
+    padding: 20px;
+  }
+  
+  .cadastroCard {
+    background-color: white;
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+  }
+  
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .brasao {
+    width: 80px;
+    height: auto;
+    margin-bottom: 10px;
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 2rem;
+    color: #0a2e7e;
+    margin-bottom: 5px;
+    font-weight: 700;
+  }
+  
+  .subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #555;
+    margin-top: 0;
+    font-weight: 500;
+  }
+  
+  .section {
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    border-left: 4px solid #0a2e7e;
+  }
+  
+  .sectionTitle {
+    color: #0a2e7e;
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  
+  .inputGroup {
+    margin-bottom: 15px;
+  }
+  
+  .row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .row .inputGroup {
+    flex: 1;
+    min-width: 250px;
+  }
+  
+  .inputGroup label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  .input:focus {
+    border-color: #0a2e7e;
+  }
+  
+  .smallText {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  .termos {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .checkbox {
+    margin-top: 3px;
+  }
+  
+  .link {
+    color: #0a2e7e;
+    text-decoration: none;
+  }
+  
+  .link:hover {
+    text-decoration: underline;
+  }
+  
+  .cadastroButton {
+    width: 100%;
+    padding: 15px;
+    background-color: #0a2e7e;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: 500;
+    margin-top: 10px;
+  }
+  
+  .cadastroButton:hover {
+    background-color: #09236a;
+  }
+  
+  .jaTemConta {
+    text-align: center;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+  }
+  
+  .jaTemConta span {
+    color: #333;
+    font-size: 0.9rem;
+  }
+  
+  .loginLink {
+    color: #0a2e7e;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  
+  .loginLink:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 768px) {
+    .cadastroCard {
+      padding: 20px;
+    }
+    
+    .row {
+      flex-direction: column;
+      gap: 0;
+    }
+    
+    .row .inputGroup {
+      min-width: 100%;
+    }
+  }

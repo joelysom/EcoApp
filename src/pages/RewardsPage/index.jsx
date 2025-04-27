@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { FaChevronRight, FaLeaf, FaShoppingBag, FaCoffee, FaBus, FaStore, FaShareAlt, FaHistory, FaFilter } from 'react-icons/fa';
-import { MdHome, MdMap, MdCardGiftcard, MdStar, MdShoppingBag, MdFilterList, MdNotifications, MdClose } from 'react-icons/md';
-import logo from '../../assets/icon/icon.webp';
-import '../EcoApp.css';
+import { MdNotifications, MdClose, MdFilterList } from 'react-icons/md';
 
-const Rewards = () => {
-  const location = useLocation();
-  const { pathname } = location;
-
+const RewardsContent = () => {
   // Estados para controlar as funcionalidades
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -186,179 +180,137 @@ const Rewards = () => {
   };
 
   return (
-    <div className="app-container">
-      <header className="header">
-        <div className="logo-container">
-          <img src={logo} alt="Logo" className="app-logo" />
-          {notificationCount > 0 && (
-            <div className="notification-badge">{notificationCount}</div>
-          )}
+    <main className="main-content">
+      {/* Notificação de novas recompensas */}
+      {showNotification && (
+        <div className="notification-card">
+          <div className="notification-content">
+            <MdNotifications className="notification-icon" />
+            <div className="notification-text">
+              <h3>Novas recompensas disponíveis!</h3>
+              <p>2 novas recompensas foram adicionadas. Confira!</p>
+            </div>
+          </div>
+          <button className="notification-close" onClick={closeNotification}>
+            <MdClose />
+          </button>
         </div>
-        <nav className="navigation">
-          <Link to="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`}>Home</Link>
-          <Link to="/points" className={`nav-item ${pathname === '/points' ? 'active' : ''}`}>Pontos</Link>
-          <Link to="/map" className={`nav-item ${pathname === '/map' ? 'active' : ''}`}>Mapa</Link>
-          <Link to="/rewards" className={`nav-item ${pathname === '/rewards' ? 'active' : ''}`}>Recompensas</Link>
-        </nav>
-      </header>
+      )}
 
-      <main className="main-content">
-        {/* Notificação de novas recompensas */}
-        {showNotification && (
-          <div className="notification-card">
-            <div className="notification-content">
-              <MdNotifications className="notification-icon" />
-              <div className="notification-text">
-                <h3>Novas recompensas disponíveis!</h3>
-                <p>2 novas recompensas foram adicionadas. Confira!</p>
+      <div className="points-card">
+        <h1 className="points-value">1.260</h1>
+        <p className="points-label">Pontos ecológicos disponíveis</p>
+      </div>
+
+      <div className="rewards-filter">
+        <button className="filter-btn" onClick={() => setShowFilterModal(true)}>
+          <MdFilterList />
+          <span>Filtrar</span>
+        </button>
+        <div className="category-tabs">
+          {categories.map(category => (
+            <button 
+              key={category}
+              className={`category-tab ${activeCategory === category ? 'active' : ''}`}
+              onClick={() => setActiveCategory(category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <section className="rewards-list">
+        {filteredRewards.map(reward => (
+          <div className="reward-card" key={reward.id}>
+            <div className="reward-img" style={{backgroundColor: reward.iconBg}}>
+              {reward.isNew && <span className="new-badge">Novo</span>}
+              {reward.icon && React.cloneElement(reward.icon, {style: {fontSize: '24px', color: 'white'}})}
+            </div>
+            <div className="reward-content">
+              <div className="reward-details">
+                <h3 className="reward-title">{reward.title}</h3>
+                <p className="reward-vendor">{reward.vendor}</p>
+                <p className="reward-description">{reward.description}</p>
+                <div className="reward-expiry">Válido até {reward.expiry}</div>
+              </div>
+              <div className="reward-actions">
+                <div className="reward-action-buttons">
+                  <button className="reward-info-btn" onClick={() => setSelectedReward(reward)}>
+                    Detalhes
+                  </button>
+                  <button className="reward-share-btn" onClick={() => shareReward(reward)}>
+                    <FaShareAlt />
+                  </button>
+                </div>
+                <div className="reward-redeem">
+                  <span className="reward-points">{reward.points} pts</span>
+                  <button className="reward-btn" onClick={() => handleRedeem(reward)}>Resgatar</button>
+                </div>
               </div>
             </div>
-            <button className="notification-close" onClick={closeNotification}>
-              <MdClose />
-            </button>
           </div>
-        )}
+        ))}
+      </section>
 
-        <div className="points-card">
-          <h1 className="points-value">1.260</h1>
-          <p className="points-label">Pontos ecológicos disponíveis</p>
-        </div>
-
-        <div className="rewards-filter">
-          <button className="filter-btn" onClick={() => setShowFilterModal(true)}>
-            <MdFilterList />
-            <span>Filtrar</span>
+      <section className="my-rewards">
+        <div className="section-header">
+          <h2 className="section-title">Minhas recompensas</h2>
+          <button className="view-all-btn" onClick={() => alert('Ver todas as recompensas')}>
+            Ver todas
           </button>
-          <div className="category-tabs">
-            {categories.map(category => (
-              <button 
-                key={category}
-                className={`category-tab ${activeCategory === category ? 'active' : ''}`}
-                onClick={() => setActiveCategory(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
         </div>
-
-        <section className="rewards-list">
-          {filteredRewards.map(reward => (
-            <div className="reward-card" key={reward.id}>
-              <div className="reward-img" style={{backgroundColor: reward.iconBg}}>
-                {reward.isNew && <span className="new-badge">Novo</span>}
-                {reward.icon && React.cloneElement(reward.icon, {style: {fontSize: '24px', color: 'white'}})}
+        
+        <div className="my-rewards-list">
+          {myRewards.map(reward => (
+            <div className="my-reward-item" key={reward.id}>
+              <div className="my-reward-icon" style={{backgroundColor: reward.iconBg}}>
+                {reward.icon}
               </div>
-              <div className="reward-content">
-                <div className="reward-details">
-                  <h3 className="reward-title">{reward.title}</h3>
-                  <p className="reward-vendor">{reward.vendor}</p>
-                  <p className="reward-description">{reward.description}</p>
-                  <div className="reward-expiry">Válido até {reward.expiry}</div>
+              <div className="my-reward-info">
+                <h3>{reward.title}</h3>
+                <p>Válido até {reward.expiryDate}</p>
+                <span className="reward-code">{reward.code}</span>
+              </div>
+              <div className="my-reward-action">
+                <FaChevronRight />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="redeem-history">
+        <div className="section-header">
+          <h2 className="section-title">Histórico de resgates</h2>
+          <button className="view-all-btn" onClick={() => alert('Ver todo histórico')}>
+            Ver tudo
+          </button>
+        </div>
+        
+        <div className="history-list">
+          {redeemHistory.map(item => (
+            <div className="history-item" key={item.id}>
+              <div className={`history-status ${item.status === 'Expirado' ? 'expired' : 'used'}`}>
+                <FaHistory />
+              </div>
+              <div className="history-info">
+                <div className="history-details">
+                  <h3>{item.title}</h3>
+                  <p>{item.vendor}</p>
+                  <span className={`status-badge ${item.status.toLowerCase()}`}>
+                    {item.status}
+                  </span>
                 </div>
-                <div className="reward-actions">
-                  <div className="reward-action-buttons">
-                    <button className="reward-info-btn" onClick={() => setSelectedReward(reward)}>
-                      Detalhes
-                    </button>
-                    <button className="reward-share-btn" onClick={() => shareReward(reward)}>
-                      <FaShareAlt />
-                    </button>
-                  </div>
-                  <div className="reward-redeem">
-                    <span className="reward-points">{reward.points} pts</span>
-                    <button className="reward-btn" onClick={() => handleRedeem(reward)}>Resgatar</button>
-                  </div>
+                <div className="history-date-points">
+                  <div className="history-date">{item.redeemedDate}</div>
+                  <div className="history-points">-{item.points} pts</div>
                 </div>
               </div>
             </div>
           ))}
-        </section>
-
-        <section className="my-rewards">
-          <div className="section-header">
-            <h2 className="section-title">Minhas recompensas</h2>
-            <button className="view-all-btn" onClick={() => alert('Ver todas as recompensas')}>
-              Ver todas
-            </button>
-          </div>
-          
-          <div className="my-rewards-list">
-            {myRewards.map(reward => (
-              <div className="my-reward-item" key={reward.id}>
-                <div className="my-reward-icon" style={{backgroundColor: reward.iconBg}}>
-                  {reward.icon}
-                </div>
-                <div className="my-reward-info">
-                  <h3>{reward.title}</h3>
-                  <p>Válido até {reward.expiryDate}</p>
-                  <span className="reward-code">{reward.code}</span>
-                </div>
-                <div className="my-reward-action">
-                  <FaChevronRight />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="redeem-history">
-          <div className="section-header">
-            <h2 className="section-title">Histórico de resgates</h2>
-            <button className="view-all-btn" onClick={() => alert('Ver todo histórico')}>
-              Ver tudo
-            </button>
-          </div>
-          
-          <div className="history-list">
-            {redeemHistory.map(item => (
-              <div className="history-item" key={item.id}>
-                <div className={`history-status ${item.status === 'Expirado' ? 'expired' : 'used'}`}>
-                  <FaHistory />
-                </div>
-                <div className="history-info">
-                  <div className="history-details">
-                    <h3>{item.title}</h3>
-                    <p>{item.vendor}</p>
-                    <span className={`status-badge ${item.status.toLowerCase()}`}>
-                      {item.status}
-                    </span>
-                  </div>
-                  <div className="history-date-points">
-                    <div className="history-date">{item.redeemedDate}</div>
-                    <div className="history-points">-{item.points} pts</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
-
-      <footer className="footer">
-        <div className="footer-nav">
-          <Link to="/" className={`footer-btn ${pathname === '/' ? 'active' : ''}`}>
-            <MdHome />
-            <span>Home</span>
-          </Link>
-          <Link to="/map" className={`footer-btn ${pathname === '/map' ? 'active' : ''}`}>
-            <MdMap />
-            <span>Mapa</span>
-          </Link>
-          <Link to="/points" className={`footer-btn ${pathname === '/points' ? 'active' : ''}`}>
-            <MdStar />
-            <span>Pontos</span>
-          </Link>
-          <Link to="/rewards" className={`footer-btn ${pathname === '/rewards' ? 'active' : ''}`}>
-            <MdCardGiftcard />
-            <span>Recompensas</span>
-          </Link>
-          <Link to="/market" className={`footer-btn ${pathname === '/market' ? 'active' : ''}`}>
-            <MdShoppingBag />
-            <span>Mercado</span>
-          </Link>
         </div>
-      </footer>
+      </section>
 
       {/* Modal para detalhes da recompensa */}
       {selectedReward && !showRedeemModal && (
@@ -585,8 +537,8 @@ const Rewards = () => {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 };
 
-export default Rewards;
+export default RewardsContent;
