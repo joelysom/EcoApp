@@ -96,3 +96,28 @@ select:-webkit-autofill:focus {
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* Correção para garantir que os controles do React estejam acima dos elementos do Leaflet */
+.map-controls {
+  z-index: 1000 !important;
+}
+
+.map-center-marker {
+  z-index: 1000 !important;
+}
+
+/* Garante que botões e ícones do React fiquem visíveis sobre o mapa */
+.map-control-btn {
+  z-index: 1000 !important;
+  position: relative;
+}
+
+/* Garante que os popups dos ecopontos fiquem visíveis */
+.leaflet-popup {
+  z-index: 900 !important;
+}
+
+/* Correção para os marcadores personalizados */
+.ecopoint-marker .ecopoint-icon {
+  z-index: 800 !important;
+}

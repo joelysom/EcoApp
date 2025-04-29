@@ -1,0 +1,418 @@
+/* Primeiro importamos o CSS do Leaflet */
+@import 'leaflet/dist/leaflet.css';
+
+/* MAP PAGE STYLES */
+.map-container {
+    position: relative;
+    margin-bottom: 20px;
+    height: 220px;
+  }
+  
+  .map-placeholder {
+    height: 100%;
+    background-color: #e0e0e0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Estilos para rastreamento ativo */
+  .map-placeholder.tracking-active {
+    background-color: #e8f5e9;
+  }
+  
+  .map-center-marker {
+    width: 36px;
+    height: 36px;
+    background-color: #1155cc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1000 !important; /* Aumentado o z-index */
+  }
+  
+  /* Efeito de pulso para o marcador de localização ativa */
+  .map-center-marker.pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(17, 85, 204, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(17, 85, 204, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(17, 85, 204, 0);
+    }
+  }
+  
+  .map-coordinates {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #333;
+    z-index: 900 !important; /* Aumentado o z-index */
+  }
+  
+  .map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000 !important; /* Aumentado o z-index */
+  }
+  
+  .map-control-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    color: #333;
+    transition: all 0.2s ease;
+    z-index: 1000 !important; /* Aumentado o z-index */
+  }
+  
+  .map-control-btn.active {
+    background-color: #1155cc;
+    color: white;
+  }
+  
+  .map-control-btn:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Estilos para erros de localização */
+  .location-error {
+    background-color: rgba(255, 235, 238, 0.9);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    width: 80%;
+    max-width: 250px;
+    z-index: 900 !important; /* Aumentado o z-index */
+  }
+  
+  .location-error p {
+    color: #c62828;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .retry-btn {
+    background-color: #1155cc;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 1000 !important; /* Aumentado o z-index */
+  }
+  
+  /* Estilos para carregamento da localização */
+  .loading-location {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 900 !important; /* Aumentado o z-index */
+  }
+  
+  .loading-spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid #1155cc;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 8px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loading-location p {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  /* MAP PAGE STYLES (continued) */
+  .ecopoints-list {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+  }
+  
+  .ecopoint-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .ecopoint-item:last-child {
+    border-bottom: none;
+  }
+  
+  .ecopoint-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 18px;
+    background-color: #f5f7fa;
+    color: #1155cc;
+  }
+  
+  .ecopoint-info {
+    flex: 1;
+  }
+  
+  .ecopoint-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .ecopoint-info p {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  
+  .ecopoint-services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .service-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    background-color: #f5f7fa;
+    border-radius: 10px;
+    color: #666;
+  }
+  
+  .directions-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #1155cc;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+  }
+  
+  .directions-btn:hover {
+    transform: scale(1.1);
+  }
+  
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .event-card {
+    background-color: white;
+    border-radius: 12px;
+    display: flex;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .event-date {
+    width: 48px;
+    height: 48px;
+    background-color: #f5f7fa;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+  }
+  
+  .event-day {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  
+  .event-month {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .event-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .event-info p {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  
+  .event-points {
+    font-size: 12px;
+    color: #1155cc;
+    font-weight: 500;
+  }
+
+
+  /* Estilos adicionais para o Leaflet */
+
+/* Estilo para o marcador de localização do usuário */
+.user-location-marker {
+    background: transparent;
+    border: none;
+  }
+  
+  .map-placeholder .leaflet-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    z-index: 1;
+  }
+  
+  /* Estilos para os marcadores de ecopontos */
+  .ecopoint-marker {
+    background: transparent;
+    border: none;
+    z-index: 800 !important; /* Aumentado o z-index */
+  }
+  
+  .ecopoint-marker .ecopoint-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    color: #1155cc;
+    z-index: 800 !important; /* Aumentado o z-index */
+  }
+  
+  /* Cores para diferentes tipos de ecopontos */
+  .ecopoint-marker.recycle-icon .ecopoint-icon {
+    background-color: #e8f5e9;
+    color: #4caf50;
+  }
+  
+  .ecopoint-marker.oil-icon .ecopoint-icon {
+    background-color: #e3f2fd;
+    color: #2196f3;
+  }
+  
+  .ecopoint-marker.garden-icon .ecopoint-icon {
+    background-color: #f1f8e9;
+    color: #8bc34a;
+  }
+  
+  /* Estilos para os popups dos ecopontos */
+  .ecopoint-popup {
+    padding: 5px;
+    z-index: 900 !important; /* Aumentado o z-index */
+  }
+  
+  .ecopoint-popup h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .ecopoint-popup p {
+    margin: 0 0 5px 0;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .ecopoint-popup .ecopoint-services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 5px;
+  }
+  
+  .ecopoint-popup .service-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    background-color: #f5f7fa;
+    border-radius: 10px;
+    color: #666;
+  }
+  
+  .ecopoint-popup .directions-link {
+    display: inline-block;
+    background-color: #1155cc;
+    color: white;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 5px;
+    text-align: center;
+  }
+  
+  /* Correções para o Leaflet Control Attribution */
+  .leaflet-control-attribution {
+    font-size: 9px !important;
+  }
+  
+  /* Estilos para os controles do mapa */
+  .leaflet-control-zoom {
+    display: none; /* Esconder os controles padrão de zoom do Leaflet */
+  }
+  
+  /* Garantir que os controles personalizados fiquem sobre os elementos do Leaflet */
+  .leaflet-pane {
+    z-index: 400 !important;
+  }
+  
+  .leaflet-control {
+    z-index: 800 !important;
+  }
+  
+  .leaflet-popup-content-wrapper {
+    z-index: 900 !important;
+  }

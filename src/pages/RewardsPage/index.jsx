@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { FaChevronRight, FaLeaf, FaShoppingBag, FaCoffee, FaBus, FaStore, FaShareAlt, FaHistory, FaFilter } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaChevronRight, FaLeaf, FaShoppingBag, FaCoffee, FaBus, FaStore, FaShareAlt, FaHistory } from 'react-icons/fa';
 import { MdNotifications, MdClose, MdFilterList } from 'react-icons/md';
+import './RewardsPage.css';
 
 const RewardsContent = () => {
   // Estados para controlar as funcionalidades
@@ -16,6 +17,19 @@ const RewardsContent = () => {
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [showNotification, setShowNotification] = useState(true);
   const [notificationCount, setNotificationCount] = useState(2);
+  
+  // Bloquear o scroll quando um modal estiver aberto
+  useEffect(() => {
+    if (showFilterModal || selectedReward || showRedeemModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showFilterModal, selectedReward, showRedeemModal]);
 
   // Lista completa de recompensas
   const allRewards = [
@@ -154,8 +168,8 @@ const RewardsContent = () => {
   // Função para confirmar o resgate
   const confirmRedeem = () => {
     // Aqui implementaríamos a lógica de backend para confirmar o resgate
-    // Por enquanto, apenas fechamos o modal
     setShowRedeemModal(false);
+    setSelectedReward(null);
     
     // Mostrar mensagem de sucesso (poderia ser um toast)
     alert(`Recompensa "${selectedReward.title}" resgatada com sucesso!`);
@@ -168,7 +182,10 @@ const RewardsContent = () => {
   };
 
   // Função para compartilhar uma recompensa
-  const shareReward = (reward) => {
+  const shareReward = (reward, e) => {
+    // Prevenir a propagação para não abrir o modal de detalhes
+    if (e) e.stopPropagation();
+    
     // Aqui implementaríamos o compartilhamento
     alert(`Compartilhando: ${reward.title}`);
   };
@@ -179,16 +196,28 @@ const RewardsContent = () => {
     setNotificationCount(0);
   };
 
+  // Função para fechar qualquer modal quando clicar fora dele
+  const handleOverlayClick = (e) => {
+    // Só fecha se clicar diretamente no overlay e não em um elemento dentro dele
+    if (e.target.className === 'modal-overlay') {
+      setShowFilterModal(false);
+      setSelectedReward(null);
+      setShowRedeemModal(false);
+    }
+  };
+
   return (
     <main className="main-content">
       {/* Notificação de novas recompensas */}
       {showNotification && (
         <div className="notification-card">
           <div className="notification-content">
-            <MdNotifications className="notification-icon" />
+            <div className="notification-icon">
+              <MdNotifications />
+            </div>
             <div className="notification-text">
               <h3>Novas recompensas disponíveis!</h3>
-              <p>2 novas recompensas foram adicionadas. Confira!</p>
+              <p>{notificationCount} novas recompensas foram adicionadas. Confira!</p>
             </div>
           </div>
           <button className="notification-close" onClick={closeNotification}>
@@ -222,7 +251,7 @@ const RewardsContent = () => {
 
       <section className="rewards-list">
         {filteredRewards.map(reward => (
-          <div className="reward-card" key={reward.id}>
+          <div className="reward-card" key={reward.id} onClick={() => setSelectedReward(reward)}>
             <div className="reward-img" style={{backgroundColor: reward.iconBg}}>
               {reward.isNew && <span className="new-badge">Novo</span>}
               {reward.icon && React.cloneElement(reward.icon, {style: {fontSize: '24px', color: 'white'}})}
@@ -236,16 +265,33 @@ const RewardsContent = () => {
               </div>
               <div className="reward-actions">
                 <div className="reward-action-buttons">
-                  <button className="reward-info-btn" onClick={() => setSelectedReward(reward)}>
+                  <button 
+                    className="reward-info-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedReward(reward);
+                    }}
+                  >
                     Detalhes
                   </button>
-                  <button className="reward-share-btn" onClick={() => shareReward(reward)}>
+                  <button 
+                    className="reward-share-btn" 
+                    onClick={(e) => shareReward(reward, e)}
+                  >
                     <FaShareAlt />
                   </button>
                 </div>
                 <div className="reward-redeem">
                   <span className="reward-points">{reward.points} pts</span>
-                  <button className="reward-btn" onClick={() => handleRedeem(reward)}>Resgatar</button>
+                  <button 
+                    className="reward-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRedeem(reward);
+                    }}
+                  >
+                    Resgatar
+                  </button>
                 </div>
               </div>
             </div>
@@ -262,21 +308,27 @@ const RewardsContent = () => {
         </div>
         
         <div className="my-rewards-list">
-          {myRewards.map(reward => (
-            <div className="my-reward-item" key={reward.id}>
-              <div className="my-reward-icon" style={{backgroundColor: reward.iconBg}}>
-                {reward.icon}
+          {myRewards.length > 0 ? (
+            myRewards.map(reward => (
+              <div className="my-reward-item" key={reward.id}>
+                <div className="my-reward-icon" style={{backgroundColor: reward.iconBg}}>
+                  {reward.icon}
+                </div>
+                <div className="my-reward-info">
+                  <h3>{reward.title}</h3>
+                  <p>Válido até {reward.expiryDate}</p>
+                  <span className="reward-code">{reward.code}</span>
+                </div>
+                <div className="my-reward-action">
+                  <FaChevronRight />
+                </div>
               </div>
-              <div className="my-reward-info">
-                <h3>{reward.title}</h3>
-                <p>Válido até {reward.expiryDate}</p>
-                <span className="reward-code">{reward.code}</span>
-              </div>
-              <div className="my-reward-action">
-                <FaChevronRight />
-              </div>
+            ))
+          ) : (
+            <div className="empty-rewards">
+              <p>Você ainda não resgatou nenhuma recompensa.</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -289,32 +341,38 @@ const RewardsContent = () => {
         </div>
         
         <div className="history-list">
-          {redeemHistory.map(item => (
-            <div className="history-item" key={item.id}>
-              <div className={`history-status ${item.status === 'Expirado' ? 'expired' : 'used'}`}>
-                <FaHistory />
-              </div>
-              <div className="history-info">
-                <div className="history-details">
-                  <h3>{item.title}</h3>
-                  <p>{item.vendor}</p>
-                  <span className={`status-badge ${item.status.toLowerCase()}`}>
-                    {item.status}
-                  </span>
+          {redeemHistory.length > 0 ? (
+            redeemHistory.map(item => (
+              <div className="history-item" key={item.id}>
+                <div className={`history-status ${item.status === 'Expirado' ? 'expired' : 'used'}`}>
+                  <FaHistory />
                 </div>
-                <div className="history-date-points">
-                  <div className="history-date">{item.redeemedDate}</div>
-                  <div className="history-points">-{item.points} pts</div>
+                <div className="history-info">
+                  <div className="history-details">
+                    <h3>{item.title}</h3>
+                    <p>{item.vendor}</p>
+                    <span className={`status-badge ${item.status.toLowerCase()}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <div className="history-date-points">
+                    <div className="history-date">{item.redeemedDate}</div>
+                    <div className="history-points">-{item.points} pts</div>
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="empty-history">
+              <p>Ainda não há registros no histórico.</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
       {/* Modal para detalhes da recompensa */}
       {selectedReward && !showRedeemModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="reward-detail-modal">
             <div className="modal-header">
               <h2>Detalhes da Recompensa</h2>
@@ -365,7 +423,7 @@ const RewardsContent = () => {
 
       {/* Modal para confirmação de resgate */}
       {showRedeemModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="redeem-modal">
             <div className="modal-header">
               <h2>Confirmar Resgate</h2>
@@ -414,7 +472,7 @@ const RewardsContent = () => {
 
       {/* Modal para filtros */}
       {showFilterModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={handleOverlayClick}>
           <div className="filter-modal">
             <div className="modal-header">
               <h2>Filtrar Recompensas</h2>

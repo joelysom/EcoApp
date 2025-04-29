@@ -1,0 +1,893 @@
+/* REWARDS PAGE STYLES */
+/* Base layout and common styles */
+.main-content {
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #f7f9fc;
+    min-height: 100vh;
+  }
+  
+  /* Points card */
+  .points-card {
+    background: linear-gradient(135deg, #1155cc, #3b82f6);
+    color: white;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+  
+  .points-value {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+  
+  .points-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 0;
+  }
+  
+  /* Notification */
+  .notification-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .notification-icon {
+    color: #1155cc;
+    font-size: 24px;
+    background-color: rgba(17, 85, 204, 0.1);
+    padding: 8px;
+    border-radius: 50%;
+  }
+  
+  .notification-text h3 {
+    font-size: 16px;
+    margin: 0 0 4px 0;
+  }
+  
+  .notification-text p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+  
+  .notification-close {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+  
+  /* Filter and category tabs */
+  .rewards-filter {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  .filter-btn {
+    background-color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    align-self: flex-end;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+  
+  .filter-btn:hover {
+    background-color: #f7f9fc;
+  }
+  
+  .category-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 8px;
+    scrollbar-width: none; /* For Firefox */
+  }
+  
+  .category-tabs::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
+  }
+  
+  .category-tab {
+    background-color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .category-tab:hover {
+    background-color: #f0f4f8;
+  }
+  
+  .category-tab.active {
+    background-color: #1155cc;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 10px rgba(17, 85, 204, 0.2);
+  }
+  
+  /* Rewards list */
+  .rewards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  
+  .reward-card {
+    background-color: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .reward-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .reward-img {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .new-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #ff4d4f;
+    color: white;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  
+  .reward-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .reward-details {
+    flex: 1;
+  }
+  
+  .reward-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    color: #333;
+  }
+  
+  .reward-vendor {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 8px 0;
+  }
+  
+  .reward-description {
+    font-size: 14px;
+    color: #444;
+    margin: 0 0 12px 0;
+  }
+  
+  .reward-expiry {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  /* Reward actions */
+  .reward-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  
+  .reward-action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .reward-info-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .reward-info-btn:hover {
+    background-color: #f7f7f7;
+    border-color: #ccc;
+  }
+  
+  .reward-share-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .reward-share-btn:hover {
+    background-color: #f7f7f7;
+    border-color: #ccc;
+  }
+  
+  .reward-redeem {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  
+  .reward-points {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1155cc;
+  }
+  
+  .reward-btn {
+    background-color: #1155cc;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(17, 85, 204, 0.2);
+  }
+  
+  .reward-btn:hover {
+    background-color: #0e47a7;
+    box-shadow: 0 4px 8px rgba(17, 85, 204, 0.3);
+  }
+  
+  /* Section headers */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+  }
+  
+  .view-all-btn {
+    background: none;
+    border: none;
+    color: #1155cc;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  /* My Rewards */
+  .my-rewards {
+    margin-bottom: 28px;
+  }
+  
+  .my-rewards-list {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+  
+  .my-reward-item {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .my-reward-item:hover {
+    background-color: #f7f9fc;
+  }
+  
+  .my-reward-item:last-child {
+    border-bottom: none;
+  }
+  
+  .my-reward-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    color: white;
+  }
+  
+  .my-reward-info {
+    flex: 1;
+  }
+  
+  .my-reward-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #333;
+  }
+  
+  .my-reward-info p {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 6px 0;
+  }
+  
+  .reward-code {
+    font-family: monospace;
+    background-color: #f0f4f8;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #555;
+  }
+  
+  .my-reward-action {
+    color: #999;
+  }
+  
+  /* History */
+  .history-list {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+  
+  .history-item {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .history-item:last-child {
+    border-bottom: none;
+  }
+  
+  .history-status {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    color: white;
+  }
+  
+  .history-status.expired {
+    background-color: #ff4d4f;
+  }
+  
+  .history-status.used {
+    background-color: #52c41a;
+  }
+  
+  .history-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .history-details h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #333;
+  }
+  
+  .history-details p {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 6px 0;
+  }
+  
+  .status-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  
+  .status-badge.expirado {
+    background-color: #fff1f0;
+    color: #f5222d;
+  }
+  
+  .status-badge.utilizado {
+    background-color: #f6ffed;
+    color: #52c41a;
+  }
+  
+  .history-date-points {
+    text-align: right;
+  }
+  
+  .history-date {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  
+  .history-points {
+    font-size: 14px;
+    font-weight: 500;
+    color: #ff4d4f;
+  }
+  
+  /* Modals */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  
+  .reward-detail-modal, .redeem-modal, .filter-modal {
+    background-color: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: modal-appear 0.3s ease-out;
+  }
+  
+  @keyframes modal-appear {
+    from { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+  
+  .modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+  }
+  
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+  
+  .modal-close:hover {
+    background-color: #f5f5f5;
+    color: #666;
+  }
+  
+  .modal-content {
+    padding: 20px;
+  }
+  
+  /* Reward Detail Modal */
+  .reward-detail-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+  }
+  
+  .reward-detail-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    text-align: center;
+    color: #333;
+  }
+  
+  .reward-detail-vendor {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 24px 0;
+    text-align: center;
+  }
+  
+  .reward-detail-section {
+    margin-bottom: 24px;
+  }
+  
+  .reward-detail-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: #333;
+  }
+  
+  .reward-detail-section p {
+    font-size: 15px;
+    color: #444;
+    margin: 0;
+    line-height: 1.5;
+  }
+  
+  .reward-detail-info {
+    background-color: #f7f9fc;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  
+  .detail-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .detail-label {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .detail-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .detail-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .detail-share-btn {
+    flex: 1;
+    background-color: #f0f4f8;
+    border: none;
+    border-radius: 24px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .detail-share-btn:hover {
+    background-color: #e0e7ef;
+  }
+  
+  .detail-redeem-btn {
+    flex: 2;
+    background-color: #1155cc;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(17, 85, 204, 0.2);
+  }
+  
+  .detail-redeem-btn:hover {
+    background-color: #0e47a7;
+    box-shadow: 0 4px 12px rgba(17, 85, 204, 0.3);
+  }
+  
+  /* Redeem Modal */
+  .redeem-confirmation {
+    text-align: center;
+  }
+  
+  .redeem-confirmation p {
+    font-size: 15px;
+    color: #666;
+    margin: 0 0 12px 0;
+  }
+  
+  .redeem-confirmation h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #333;
+  }
+  
+  .redeem-vendor {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 24px 0;
+  }
+  
+  .redeem-points-summary {
+    background-color: #f7f9fc;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 0 0 24px 0;
+  }
+  
+  .points-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #666;
+  }
+  
+  .points-row.deduction {
+    color: #ff4d4f;
+    font-weight: 500;
+  }
+  
+  .points-row.total {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #ddd;
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+  }
+  
+  .redeem-terms {
+    margin-bottom: 24px;
+  }
+  
+  .redeem-terms p {
+    font-size: 13px;
+    color: #888;
+  }
+  
+  .redeem-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .cancel-btn {
+    flex: 1;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 24px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .confirm-btn {
+    flex: 2;
+    background-color: #1155cc;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(17, 85, 204, 0.2);
+  }
+  
+  .confirm-btn:hover {
+    background-color: #0e47a7;
+    box-shadow: 0 4px 12px rgba(17, 85, 204, 0.3);
+  }
+  
+  /* Filter Modal */
+  .filter-section {
+    margin-bottom: 24px;
+  }
+  
+  .filter-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #333;
+  }
+  
+  .radio-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .radio-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+  }
+  
+  .radio-options input, .checkbox-options input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
+  .range-filter {
+    padding: 8px 0;
+  }
+  
+  .range-inputs input {
+    width: 100%;
+    margin: 8px 0;
+  }
+  
+  .range-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+  }
+  
+  .checkbox-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .checkbox-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #444;
+    cursor: pointer;
+  }
+  
+  .filter-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  
+  .reset-btn {
+    flex: 1;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 24px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .reset-btn:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .apply-btn {
+    flex: 2;
+    background-color: #1155cc;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(17, 85, 204, 0.2);
+  }
+  
+  .apply-btn:hover {
+    background-color: #0e47a7;
+  }
