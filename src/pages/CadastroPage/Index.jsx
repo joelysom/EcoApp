@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/auth';
 import styles from './Cadastro.module.css';
-import brasaoPE from '../../assets/icon/icon.webp'; // Você precisará adicionar este arquivo
+import brasaoPE from '../../assets/icon/icon.webp'; // Ajuste o caminho conforme necessário
 
 const Cadastro = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +22,13 @@ const Cadastro = () => {
     senha: '',
     confirmarSenha: ''
   });
+  
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,20 +77,74 @@ const Cadastro = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    // Validação de senha
+    if (formData.senha !== formData.confirmarSenha) {
+      setError('As senhas não coincidem.');
+      return false;
+    }
+    
+    if (formData.senha.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres.');
+      return false;
+    }
+    
+    // Validação de CPF (formato básico)
+    if (formData.cpf.replace(/\D/g, '').length !== 11) {
+      setError('CPF inválido.');
+      return false;
+    }
+    
+    // Validação de termos
+    if (!termsAccepted) {
+      setError('Você precisa aceitar os termos de uso e política de privacidade.');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lógica de cadastro aqui
-    console.log('Dados enviados:', formData);
+    
+    if (!validateForm()) return;
+    
+    try {
+      setError('');
+      setLoading(true);
+      await register(formData.email, formData.senha, formData);
+      navigate('/home');
+    } catch (error) {
+      console.error("Cadastro error:", error);
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          setError('Este email já está em uso.');
+          break;
+        case 'auth/invalid-email':
+          setError('Email inválido.');
+          break;
+        case 'auth/weak-password':
+          setError('Senha fraca. Use pelo menos 8 caracteres com letras e números.');
+          break;
+        default:
+          setError('Falha no cadastro. Por favor, tente novamente.');
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.cadastroCard}>
         <div className={styles.header}>
-          <img src={brasaoPE} alt="Brasão de Pernambuco" className={styles.brasao} />
-          <h1 className={styles.title}>Cadastro de Cidadão</h1>
-          <h2 className={styles.subtitle}>Governo de Pernambuco</h2>
+          <img src={brasaoPE} alt="Logo EcoApp" className={styles.brasao} />
+          <h1 className={styles.title}>Cadastro de Usuário</h1>
+          <h2 className={styles.subtitle}>EcoApp - Recicle e Ganhe</h2>
         </div>
+        
+        {error && <div className={styles.errorMessage}>{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className={styles.section}>
@@ -317,6 +380,8 @@ const Cadastro = () => {
               type="checkbox"
               id="termos"
               className={styles.checkbox}
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
               required
             />
             <label htmlFor="termos">
@@ -324,14 +389,18 @@ const Cadastro = () => {
             </label>
           </div>
           
-          <button type="submit" className={styles.cadastroButton}>
-            Cadastrar
+          <button 
+            type="submit" 
+            className={styles.cadastroButton}
+            disabled={loading}
+          >
+            {loading ? 'Processando...' : 'Cadastrar'}
           </button>
         </form>
         
         <div className={styles.jaTemConta}>
           <span>Já possui cadastro?</span>
-          <a href="#" className={styles.loginLink}>Entrar</a>
+          <Link to="/" className={styles.loginLink}>Entrar</Link>
         </div>
       </div>
     </div>

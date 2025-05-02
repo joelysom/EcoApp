@@ -9,7 +9,7 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-nav">
-        <Link to="/" className={`footer-btn ${pathname === '/' ? 'active' : ''}`}>
+        <Link to="/home" className={`footer-btn ${pathname === '/' ? 'active' : ''}`}>
           <MdHome />
           <span>Home</span>
         </Link>

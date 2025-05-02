@@ -1,57 +1,111 @@
 import { useState } from 'react';
-import styles from './Login.module.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/auth';
+import brasaoPE from '../../assets/icon/icon.webp'; // Ajuste o caminho conforme necessário
+import './Login.css'; // Importando o CSS diretamente ao invés de módulos
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lógica de login aqui
+    
+    try {
+      setError('');
+      setLoading(true);
+      await login(email, password);
+      navigate('/home');
+    } catch (error) {
+      console.error("Login error:", error);
+      switch (error.code) {
+        case 'auth/invalid-email':
+          setError('Email inválido.');
+          break;
+        case 'auth/user-disabled':
+          setError('Este usuário foi desativado.');
+          break;
+        case 'auth/user-not-found':
+          setError('Usuário não encontrado.');
+          break;
+        case 'auth/wrong-password':
+          setError('Senha incorreta.');
+          break;
+        case 'auth/too-many-requests':
+          setError('Muitas tentativas. Tente novamente mais tarde.');
+          break;
+        default:
+          setError('Falha no login. Por favor, tente novamente.');
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.loginCard}>
-        <h1 className={styles.title}>Entrar</h1>
+    <div className="container">
+      <div className="loginCard">
+        <div className="header">
+          <img src={brasaoPE} alt="Logo" className="logo" />
+          <h1 className="title">Entrar</h1>
+          <p className="subtitle">EcoApp - Recicle e Ganhe</p>
+        </div>
+
+        {error && <div className="errorMessage">{error}</div>}
         
         <form onSubmit={handleSubmit}>
-          <div className={styles.inputGroup}>
+          <div className="inputGroup">
+            <label htmlFor="email">Email</label>
             <input
               type="email"
-              placeholder="Endereço de email"
+              id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={styles.input}
+              className="input"
               required
             />
           </div>
-          
-          <div className={styles.inputGroup}>
+
+          <div className="inputGroup">
+            <label htmlFor="password">Senha</label>
             <input
               type="password"
-              placeholder="Senha"
+              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={styles.input}
+              className="input"
               required
             />
           </div>
-          
-          <button type="submit" className={styles.loginButton}>
-            Entrar
+
+          <button 
+            type="submit" 
+            className="loginButton"
+            disabled={loading}
+          >
+            {loading ? 'Processando...' : 'Entrar'}
           </button>
         </form>
-        
-        <div className={styles.forgotPassword}>
-          <a href="#">Esqueceu a senha?</a>
+
+        <div className="forgotPassword">
+          <Link to="/adminpoints">
+            Esqueceu a senha?
+          </Link>
         </div>
-        
-        <div className={styles.divider}></div>
-        
-        <div className={styles.signup}>
+
+        <div className="divider"></div>
+
+        <div className="signup">
           <span>Não tem uma conta?</span>
-          <a href="#" className={styles.signupLink}>Cadastre-se</a>
+          <Link to="/cadastro" className="signupLink">
+            Cadastre-se
+          </Link>
         </div>
       </div>
     </div>

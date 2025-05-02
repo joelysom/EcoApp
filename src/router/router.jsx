@@ -1,5 +1,4 @@
-// src/router/router.jsx
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Home from '../pages/Home.jsx';
 import Points from '../pages/PointsPage';
@@ -8,14 +7,41 @@ import Rewards from '../pages/RewardsPage';
 import Market from '../pages/MarketPage/index.jsx';
 import Login from '../pages/LoginPage';
 import Cadastro from '../pages/CadastroPage';
+import { useAuth } from '../auth/auth';
+import Profile from '../pages/ProfilePage';
+import AdminPoints from '../pages/AdminPages';
 
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const { currentUser } = useAuth();
+  
+  if (!currentUser) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
+};
+
+// Create the router with a correct structure
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: <Login />
+  },
+  {
+    path: "/cadastro",
+    element: <Cadastro />
+  },
+  {
+    path: "/adminpoints",
+    element: <ProtectedRoute><AdminPoints /></ProtectedRoute>
+  },
+  // Fix: Use a separate route group for the protected routes
+  {
+    element: <ProtectedRoute><Layout /></ProtectedRoute>,
     children: [
       {
-        path: "/",
+        path: "/home",
         element: <Home />
       },
       {
@@ -35,12 +61,8 @@ const router = createBrowserRouter([
         element: <Market />
       },
       {
-        path: "/login",
-        element: <Login />
-      },
-      {
-        path: "/cadastro",
-        element: <Cadastro />
+        path: "/profile",
+        element: <Profile />
       }
     ]
   }
