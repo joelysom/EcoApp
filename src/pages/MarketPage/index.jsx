@@ -1,8 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaShoppingCart, FaSearch, FaHeart, FaStar, FaLeaf } from 'react-icons/fa';
 import { MdShoppingBag } from 'react-icons/md';
+import { useAuth } from '../../auth/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 const Market = () => {
+  const { currentUser, ecoToastError } = useAuth();
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is logged in
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const db = getFirestore();
+        
+        // Fetch user data
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+        } else {
+          ecoToastError("Dados do usuário não encontrados.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        ecoToastError("Erro ao carregar dados. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [currentUser, navigate, ecoToastError]);
+
   return (
     <div className="main-content">
       <div className="search-container">
@@ -18,8 +55,14 @@ const Market = () => {
 
       <div className="market-stats">
         <div className="points-card" style={{height: '80px', paddingTop: '12px', paddingBottom: '12px'}}>
-          <h1 className="points-value">1.260</h1>
-          <p className="points-label">Pontos para usar em compras</p>
+          {loading ? (
+            <div className="loading-spinner small"></div>
+          ) : (
+            <>
+              <h1 className="points-value">{userData?.pontos || 0}</h1>
+              <p className="points-label">Pontos para usar em compras</p>
+            </>
+          )}
         </div>
       </div>
 

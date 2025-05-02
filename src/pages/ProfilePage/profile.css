@@ -1,199 +1,302 @@
 .profile-container {
-    max-width: 480px;
-    margin: 0 auto;
-    background-color: #f5f7fa;
-    min-height: 100vh;
-    padding: 20px;
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.profile-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.profile-header {
+  background: linear-gradient(90deg, #1155cc 0%, #4a2f9f 100%);
+  padding: 24px 20px;
+  color: white;
+  text-align: center;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.profile-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: white;
+  color: #1155cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0 auto 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-name {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  color: white;
+}
+
+.user-badge.bronze {
+  background-color: #CD7F32;
+  box-shadow: 0 0 5px 1px rgba(205, 127, 50, 0.6);
+}
+
+.user-badge.silver {
+  background-color: #C0C0C0;
+  box-shadow: 0 0 5px 1px rgba(192, 192, 192, 0.6);
+}
+
+.user-badge.gold {
+  background-color: #FFD700;
+  box-shadow: 0 0 5px 1px rgba(255, 215, 0, 0.6);
+  color: #5D4037;
+}
+
+.profile-points {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 6px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.points-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.points-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.profile-details, .profile-form {
+  padding: 20px;
+}
+
+.profile-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+
+.detail-item {
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #666;
+  width: 40%;
+  min-width: 120px;
+}
+
+.detail-value {
+  color: #333;
+  flex: 1;
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.edit-button, .save-button, .admin-button {
+  background: linear-gradient(90deg, #1155cc 0%, #4a2f9f 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.edit-button:hover, .save-button:hover, .admin-button:hover {
+  opacity: 0.9;
+}
+
+.admin-button {
+  background: linear-gradient(90deg, #FF8F00 0%, #FF6F00 100%);
+}
+
+.logout-button, .cancel-button {
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logout-button:hover, .cancel-button:hover {
+  background-color: #ebebeb;
+}
+
+.logout-button {
+  background-color: #fff5f5;
+  color: #d32f2f;
+  border: 1px solid #ffcdd2;
+}
+
+.logout-button:hover {
+  background-color: #ffebee;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #1155cc;
+  outline: none;
+}
+
+.form-input:disabled {
+  background-color: #f9f9f9;
+  cursor: not-allowed;
+}
+
+.form-help {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.form-actions button {
+  flex: 1;
+}
+
+/* Loading state animation */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
   }
-  
-  .profile-card {
-    background-color: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+  50% {
+    opacity: 1;
   }
-  
-  .profile-header {
-    background: linear-gradient(90deg, #1155cc 0%, #4a2f9f 100%);
-    padding: 24px 20px;
-    color: white;
-    text-align: center;
-    position: relative;
+  100% {
+    opacity: 0.6;
   }
-  
-  .back-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 5px;
-  }
-  
-  .profile-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-  
-  .profile-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: white;
-    color: #1155cc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 600;
-    margin: 0 auto 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .profile-name {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  
-  .profile-points {
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    padding: 6px 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .points-value {
-    font-size: 18px;
-    font-weight: 700;
-  }
-  
-  .points-label {
-    font-size: 14px;
-    opacity: 0.9;
-  }
-  
-  .profile-details, .profile-form {
-    padding: 20px;
-  }
-  
-  .profile-section {
-    margin-bottom: 24px;
-  }
-  
-  .section-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 6px;
-  }
-  
-  .detail-item {
-    margin-bottom: 10px;
-    display: flex;
-    flex-wrap: wrap;
-  }
-  
-  .detail-label {
-    font-weight: 500;
-    color: #666;
-    width: 40%;
-    min-width: 120px;
-  }
-  
-  .detail-value {
-    color: #333;
-    flex: 1;
-  }
-  
-  .profile-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  
-  .edit-button, .save-button {
-    background: linear-gradient(90deg, #1155cc 0%, #4a2f9f 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
+}
+
+.profile-card h1:contains("Carregando") {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 480px) {
+  .profile-container {
     padding: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-  }
-  
-  .edit-button:hover, .save-button:hover {
-    opacity: 0.9;
-  }
-  
-  .logout-button, .cancel-button {
-    background-color: #f5f5f5;
-    color: #666;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .logout-button:hover, .cancel-button:hover {
-    background-color: #ebebeb;
-  }
-  
-  /* Form Styles */
-  .form-group {
-    margin-bottom: 16px;
   }
   
   .form-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  
-  .form-row .form-group {
-    flex: 1;
-    margin-bottom: 0;
-  }
-  
-  .form-input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.2s ease;
-  }
-  
-  .form-input:focus {
-    border-color: #1155cc;
-    outline: none;
-  }
-  
-  .form-help {
-    display: block;
-    font-size: 12px;
-    color: #666;
-    margin-top: 4px;
+    flex-direction: column;
+    gap: 8px;
   }
   
   .form-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
+    flex-direction: column;
   }
   
-  .form-actions button {
-    flex: 1;
+  .detail-label, .detail-value {
+    width: 100%;
   }
+  
+  .detail-label {
+    margin-bottom: 2px;
+  }
+  
+  .detail-item {
+    margin-bottom: 12px;
+  }
+}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FaChevronRight, FaLeaf, FaShoppingBag, FaCoffee, FaBus, FaStore, FaShareAlt, FaHistory } from 'react-icons/fa';
 import { MdNotifications, MdClose, MdFilterList } from 'react-icons/md';
+import { useAuth } from '../../auth/auth';
+import { getFirestore, doc, getDoc, collection, query, orderBy, limit, getDocs, updateDoc, arrayUnion, Timestamp } from 'firebase/firestore';
 import './RewardsPage.css';
 
 const RewardsContent = () => {
-  // Estados para controlar as funcionalidades
+  // Estados para controlar as funcionalidades de UI
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filterOptions, setFilterOptions] = useState({
@@ -18,6 +20,15 @@ const RewardsContent = () => {
   const [showNotification, setShowNotification] = useState(true);
   const [notificationCount, setNotificationCount] = useState(2);
   
+  // Estados para dados do usuário
+  const [userPoints, setUserPoints] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [myRewards, setMyRewards] = useState([]);
+  const [redeemHistory, setRedeemHistory] = useState([]);
+  
+  // Autenticação
+  const { currentUser, ecoToastError, ecoToastSuccess } = useAuth();
+  
   // Bloquear o scroll quando um modal estiver aberto
   useEffect(() => {
     if (showFilterModal || selectedReward || showRedeemModal) {
@@ -30,6 +41,68 @@ const RewardsContent = () => {
       document.body.style.overflow = 'auto';
     };
   }, [showFilterModal, selectedReward, showRedeemModal]);
+
+  // Carregar dados do usuário
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!currentUser) {
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const db = getFirestore();
+        
+        // Buscar documento do usuário
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          
+          // Atualizar pontos do usuário
+          setUserPoints(userData.pontos || 0);
+          
+          // Buscar recompensas resgatadas
+          const userRewards = userData.rewards || [];
+          setMyRewards(userRewards);
+          
+          // Buscar histórico de resgates
+          const userHistory = userData.redeemHistory || [];
+          setRedeemHistory(userHistory);
+          
+          // Verificar notificações de novas recompensas
+          const lastVisit = userData.lastRewardsVisit ? userData.lastRewardsVisit.toDate() : null;
+          
+          if (lastVisit) {
+            // Contar recompensas adicionadas desde a última visita
+            const newRewardsCount = allRewards.filter(reward => {
+              // Aqui estamos usando uma data de exemplo para cada recompensa
+              // Na implementação real, cada recompensa teria um timestamp de criação
+              const rewardAddedDate = new Date(reward.id * 1000000); // Simulação
+              return rewardAddedDate > lastVisit;
+            }).length;
+            
+            setNotificationCount(newRewardsCount);
+            setShowNotification(newRewardsCount > 0);
+          }
+          
+          // Atualizar a data da última visita à página de recompensas
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            lastRewardsVisit: Timestamp.now()
+          });
+        } else {
+          ecoToastError("Dados do usuário não encontrados.");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error);
+        ecoToastError("Erro ao carregar seus dados. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, [currentUser, ecoToastError]);
 
   // Lista completa de recompensas
   const allRewards = [
@@ -113,44 +186,6 @@ const RewardsContent = () => {
     }
   ];
 
-  // Recompensas resgatadas pelo usuário
-  const myRewards = [
-    {
-      id: 101,
-      title: 'Desconto em Produtos Naturais',
-      vendor: 'Natureba Store',
-      description: '10% de desconto em qualquer produto',
-      redeemedDate: '15/04/2025',
-      expiryDate: '30/04/2025',
-      iconBg: '#14cca0',
-      icon: <FaStore />,
-      code: 'ECO-NAT-10425',
-      status: 'Válido'
-    }
-  ];
-
-  // Histórico de resgates
-  const redeemHistory = [
-    {
-      id: 201,
-      title: 'Café ou Chá Grátis',
-      vendor: 'Café Sustentável',
-      redeemedDate: '10/03/2025',
-      expiryDate: '25/03/2025',
-      status: 'Expirado',
-      points: 100
-    },
-    {
-      id: 202,
-      title: 'Passe de Transporte',
-      vendor: 'Transporte Público',
-      redeemedDate: '05/04/2025',
-      expiryDate: '06/04/2025',
-      status: 'Utilizado',
-      points: 350
-    }
-  ];
-
   // Categorias disponíveis
   const categories = ['Todos', 'Comida', 'Transporte', 'Produtos'];
 
@@ -161,18 +196,90 @@ const RewardsContent = () => {
 
   // Função para lidar com o resgate de recompensas
   const handleRedeem = (reward) => {
+    if (userPoints < reward.points) {
+      ecoToastError("Pontos insuficientes para resgatar esta recompensa.");
+      return;
+    }
+    
     setSelectedReward(reward);
     setShowRedeemModal(true);
   };
 
+  // Gerar código aleatório para o cupom
+  const generateRewardCode = (rewardId) => {
+    const prefix = 'ECO';
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const date = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    return `${prefix}-${rewardId}${random}-${date}`;
+  };
+
   // Função para confirmar o resgate
-  const confirmRedeem = () => {
-    // Aqui implementaríamos a lógica de backend para confirmar o resgate
-    setShowRedeemModal(false);
-    setSelectedReward(null);
+  const confirmRedeem = async () => {
+    if (!currentUser || !selectedReward) {
+      return;
+    }
     
-    // Mostrar mensagem de sucesso (poderia ser um toast)
-    alert(`Recompensa "${selectedReward.title}" resgatada com sucesso!`);
+    try {
+      const db = getFirestore();
+      const userRef = doc(db, "users", currentUser.uid);
+      
+      // Data atual para registro do resgate
+      const now = new Date();
+      const expiryDate = new Date(now);
+      expiryDate.setDate(expiryDate.getDate() + 15); // Expiração em 15 dias
+      
+      // Gerar código do cupom
+      const code = generateRewardCode(selectedReward.id);
+      
+      // Objeto da recompensa resgatada
+      const redeemedReward = {
+        id: Date.now(), // ID único
+        rewardId: selectedReward.id,
+        title: selectedReward.title,
+        vendor: selectedReward.vendor,
+        description: selectedReward.description,
+        redeemedDate: now,
+        expiryDate: expiryDate,
+        status: 'Válido',
+        code: code,
+        iconBg: selectedReward.iconBg,
+        icon: selectedReward.icon ? selectedReward.icon.type.name : 'FaStore',
+      };
+      
+      // Objeto do histórico de resgate
+      const historyEntry = {
+        id: Date.now(),
+        rewardId: selectedReward.id,
+        title: selectedReward.title,
+        vendor: selectedReward.vendor,
+        redeemedDate: now,
+        expiryDate: expiryDate,
+        status: 'Válido',
+        points: selectedReward.points
+      };
+      
+      // Atualizar o documento do usuário
+      await updateDoc(userRef, {
+        pontos: userPoints - selectedReward.points,
+        rewards: arrayUnion(redeemedReward),
+        redeemHistory: arrayUnion(historyEntry)
+      });
+      
+      // Atualizar o estado local
+      setUserPoints(userPoints - selectedReward.points);
+      setMyRewards([...myRewards, redeemedReward]);
+      setRedeemHistory([...redeemHistory, historyEntry]);
+      
+      // Fechar o modal
+      setShowRedeemModal(false);
+      setSelectedReward(null);
+      
+      // Mostrar mensagem de sucesso
+      ecoToastSuccess(`Recompensa "${selectedReward.title}" resgatada com sucesso!`);
+    } catch (error) {
+      console.error("Erro ao resgatar recompensa:", error);
+      ecoToastError("Erro ao processar o resgate. Tente novamente.");
+    }
   };
 
   // Função para aplicar os filtros
@@ -206,6 +313,32 @@ const RewardsContent = () => {
     }
   };
 
+  // Formatar data para display
+  const formatDate = (date) => {
+    if (!date) return '';
+    
+    if (date instanceof Date) {
+      return date.toLocaleDateString('pt-BR');
+    }
+    
+    // Se for um objeto Timestamp do Firestore ou tiver propriedade toDate()
+    if (date.toDate && typeof date.toDate === 'function') {
+      return date.toDate().toLocaleDateString('pt-BR');
+    }
+    
+    // Se for uma string, retornar como está
+    return date;
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Carregando suas recompensas...</p>
+      </div>
+    );
+  }
+
   return (
     <main className="main-content">
       {/* Notificação de novas recompensas */}
@@ -227,7 +360,7 @@ const RewardsContent = () => {
       )}
 
       <div className="points-card">
-        <h1 className="points-value">1.260</h1>
+        <h1 className="points-value">{userPoints}</h1>
         <p className="points-label">Pontos ecológicos disponíveis</p>
       </div>
 
@@ -289,6 +422,8 @@ const RewardsContent = () => {
                       e.stopPropagation();
                       handleRedeem(reward);
                     }}
+                    disabled={userPoints < reward.points}
+                    style={userPoints < reward.points ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
                   >
                     Resgatar
                   </button>
@@ -312,11 +447,16 @@ const RewardsContent = () => {
             myRewards.map(reward => (
               <div className="my-reward-item" key={reward.id}>
                 <div className="my-reward-icon" style={{backgroundColor: reward.iconBg}}>
-                  {reward.icon}
+                  {/* Renderizar o ícone correto com base no nome armazenado */}
+                  {reward.icon === 'FaStore' ? <FaStore /> : 
+                   reward.icon === 'FaLeaf' ? <FaLeaf /> :
+                   reward.icon === 'FaCoffee' ? <FaCoffee /> :
+                   reward.icon === 'FaBus' ? <FaBus /> :
+                   reward.icon === 'FaShoppingBag' ? <FaShoppingBag /> : <FaStore />}
                 </div>
                 <div className="my-reward-info">
                   <h3>{reward.title}</h3>
-                  <p>Válido até {reward.expiryDate}</p>
+                  <p>Válido até {formatDate(reward.expiryDate)}</p>
                   <span className="reward-code">{reward.code}</span>
                 </div>
                 <div className="my-reward-action">
@@ -356,7 +496,7 @@ const RewardsContent = () => {
                     </span>
                   </div>
                   <div className="history-date-points">
-                    <div className="history-date">{item.redeemedDate}</div>
+                    <div className="history-date">{formatDate(item.redeemedDate)}</div>
                     <div className="history-points">-{item.points} pts</div>
                   </div>
                 </div>
@@ -412,7 +552,12 @@ const RewardsContent = () => {
                 <button className="detail-share-btn" onClick={() => shareReward(selectedReward)}>
                   <FaShareAlt /> Compartilhar
                 </button>
-                <button className="detail-redeem-btn" onClick={() => handleRedeem(selectedReward)}>
+                <button 
+                  className="detail-redeem-btn" 
+                  onClick={() => handleRedeem(selectedReward)}
+                  disabled={userPoints < selectedReward.points}
+                  style={userPoints < selectedReward.points ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                >
                   Resgatar por {selectedReward.points} pts
                 </button>
               </div>
@@ -440,7 +585,7 @@ const RewardsContent = () => {
                 <div className="redeem-points-summary">
                   <div className="points-row">
                     <span>Seus pontos:</span>
-                    <span>1.260 pts</span>
+                    <span>{userPoints} pts</span>
                   </div>
                   <div className="points-row deduction">
                     <span>Resgate:</span>
@@ -448,7 +593,7 @@ const RewardsContent = () => {
                   </div>
                   <div className="points-row total">
                     <span>Restante:</span>
-                    <span>{1260 - selectedReward.points} pts</span>
+                    <span>{userPoints - selectedReward.points} pts</span>
                   </div>
                 </div>
                 

@@ -403,7 +403,7 @@ const AdminPoints = () => {
             <div className="modal-footer">
               <button 
                 className="cancel-button"
-                onClick={() => setModalOpen(false)}
+                onClick={() => setPointsModalOpen(false)}
               >
                 Cancelar
               </button>
@@ -413,6 +413,79 @@ const AdminPoints = () => {
                 disabled={pointsToAdd <= 0}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para editar permissões */}
+      {permissionModalOpen && selectedUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Editar Permissões</h2>
+              <button className="close-button" onClick={() => setPermissionModalOpen(false)}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="user-info">
+                <p><strong>Usuário:</strong> {selectedUser.nome || 'Sem nome'}</p>
+                <p><strong>Email:</strong> {selectedUser.email}</p>
+                <p><strong>Nível atual:</strong> {getPermissionBadge(selectedUser.nivelPermissao)}</p>
+              </div>
+              
+              <div className="permission-section">
+                <h3>Selecione o nível de permissão:</h3>
+                
+                <div className="permission-options">
+                  <div 
+                    className={`permission-option ${newPermissionLevel === 1 ? 'selected' : ''}`}
+                    onClick={() => setNewPermissionLevel(1)}
+                  >
+                    <div className="badge normal">Usuário</div>
+                    <p>Acesso básico ao sistema</p>
+                  </div>
+                  
+                  <div 
+                    className={`permission-option ${newPermissionLevel === 2 ? 'selected' : ''}`}
+                    onClick={() => setNewPermissionLevel(2)}
+                  >
+                    <div className="badge bronze">★ Bronze</div>
+                    <p>Usuário com destaque bronze</p>
+                  </div>
+                  
+                  <div 
+                    className={`permission-option ${newPermissionLevel === 3 ? 'selected' : ''}`}
+                    onClick={() => setNewPermissionLevel(3)}
+                  >
+                    <div className="badge silver">★ Prata</div>
+                    <p>Usuário com destaque prata</p>
+                  </div>
+                  
+                  <div 
+                    className={`permission-option ${newPermissionLevel === 4 ? 'selected' : ''}`}
+                    onClick={() => setNewPermissionLevel(4)}
+                  >
+                    <div className="badge gold">★ Administrador</div>
+                    <p>Acesso total ao sistema e painel de administração</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="cancel-button"
+                onClick={() => setPermissionModalOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="confirm-button"
+                onClick={handleUpdatePermission}
+              >
+                Salvar Alterações
               </button>
             </div>
           </div>
