@@ -416,3 +416,352 @@
   .leaflet-popup-content-wrapper {
     z-index: 900 !important;
   }
+
+  /* Estilos para o botão de denúncia */
+.report-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: #1155cc;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 3px 10px rgba(17, 85, 204, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 900;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.report-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(17, 85, 204, 0.4);
+}
+
+.report-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(17, 85, 204, 0.3);
+}
+
+/* Estilos para o modal de denúncia */
+.report-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.report-modal {
+  background-color: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #666;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-modal-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.report-modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333;
+  text-align: center;
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f5f7fa;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 12px;
+  color: #666;
+}
+
+.location-info svg {
+  color: #1155cc;
+  font-size: 16px;
+}
+
+.image-upload-section {
+  margin-bottom: 15px;
+}
+
+.upload-placeholder {
+  height: 180px;
+  background-color: #f5f7fa;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  border: 2px dashed #ddd;
+  transition: all 0.2s;
+}
+
+.upload-placeholder:hover {
+  background-color: #e8f0fe;
+  border-color: #1155cc;
+}
+
+.upload-placeholder svg {
+  font-size: 36px;
+  color: #1155cc;
+}
+
+.upload-placeholder p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.image-preview-container {
+  position: relative;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f44336;
+  transition: all 0.2s;
+}
+
+.remove-image-btn:hover {
+  background-color: white;
+  transform: scale(1.1);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #1155cc;
+  outline: none;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.submit-report-btn {
+  width: 100%;
+  background-color: #1155cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-report-btn:hover {
+  background-color: #0d47a1;
+}
+
+.submit-report-btn:disabled {
+  background-color: #b0bec5;
+  cursor: not-allowed;
+}
+
+.submit-status {
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.submit-status.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.submit-status.error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* Estilos para os marcadores de denúncia no mapa */
+.report-marker {
+  background: transparent;
+  border: none;
+  z-index: 800 !important;
+}
+
+.report-marker .report-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #ffebee;
+  color: #f44336;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+}
+
+/* Estilos para o popup das denúncias */
+.report-popup {
+  padding: 5px;
+  max-width: 250px;
+}
+
+.report-popup h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.report-popup p {
+  margin: 5px 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.report-image {
+  margin: 8px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.report-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Media queries para responsividade */
+@media (max-width: 768px) {
+  .report-btn {
+    bottom: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .report-modal {
+    width: 95%;
+    padding: 15px;
+  }
+}
+
+/* Estilos para efeito de pulsação no botão de denúncia */
+@keyframes reportBtnPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(17, 85, 204, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(17, 85, 204, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(17, 85, 204, 0);
+  }
+}
+
+.report-btn {
+  animation: reportBtnPulse 2s infinite;
+}

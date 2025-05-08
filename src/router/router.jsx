@@ -10,6 +10,7 @@ import Cadastro from '../pages/CadastroPage';
 import { useAuth } from '../auth/auth';
 import Profile from '../pages/ProfilePage';
 import AdminPoints from '../pages/AdminPages';
+import Comunidade from '../pages/ComunityPage';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile />
+      },
+      {
+        path: "/comunidade",
+        element: <Comunidade />
       }
     ]
   }

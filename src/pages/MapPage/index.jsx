@@ -3,6 +3,7 @@ import { FaLocationArrow, FaList, FaFilter, FaTint, FaRecycle, FaLeaf } from 're
 import { MdDirections } from 'react-icons/md';
 import L from 'leaflet';
 import './MapPage.css';
+import ReportButton from './ReportFeature.jsx'; // Importar o componente de denúncia
 
 // Definir os ícones do Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -21,6 +22,8 @@ const Map = () => {
   const currentMarkerRef = useRef(null);
   // Referência para marcadores de ecopontos
   const ecopointMarkersRef = useRef([]);
+  // Referência para marcadores de denúncias
+  const reportMarkersRef = useRef([]);
   
   // Estado para armazenar a localização atual
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -94,6 +97,9 @@ const Map = () => {
     // Adicionar marcadores para ecopontos
     addEcopointMarkers(map);
     
+    // Adicionar marcadores de denúncias existentes
+    fetchAndDisplayReports(map);
+    
     // Guardar referência do mapa
     leafletMapRef.current = map;
     setMapInitialized(true);
@@ -152,6 +158,89 @@ const Map = () => {
       
       ecopointMarkersRef.current.push(marker);
     });
+  };
+
+  // Nova função para buscar e exibir denúncias do Firebase
+  const fetchAndDisplayReports = async (map) => {
+    try {
+      // Aqui você faria uma chamada para o Firebase Firestore
+      // para buscar denúncias existentes
+      const { getFirestore, collection, getDocs, query, where } = await import('firebase/firestore');
+      const db = getFirestore();
+      
+      // Limpar marcadores anteriores
+      if (reportMarkersRef.current.length > 0) {
+        reportMarkersRef.current.forEach(marker => {
+          map.removeLayer(marker);
+        });
+        reportMarkersRef.current = [];
+      }
+      
+      // Buscar denúncias pendentes (não resolvidas)
+      const q = query(collection(db, "reports"), where("status", "==", "pending"));
+      const querySnapshot = await getDocs(q);
+      
+      querySnapshot.forEach(doc => {
+        const report = doc.data();
+        
+        // Criar ícone para denúncia
+        const reportIcon = L.divIcon({
+          className: 'report-marker',
+          html: '<div class="report-icon"><i class="fa fa-exclamation-triangle"></i></div>',
+          iconSize: [38, 38],
+          iconAnchor: [19, 19]
+        });
+        
+        // Criar marcador e popup
+        const marker = L.marker([report.location.lat, report.location.lng], { icon: reportIcon })
+          .addTo(map)
+          .bindPopup(`
+            <div class="report-popup">
+              <h3>Denúncia de descarte</h3>
+              <div class="report-image">
+                <img src="${report.imageUrl}" alt="Descarte irregular" />
+              </div>
+              <p><strong>Tipo:</strong> ${getWasteTypeLabel(report.wasteType)}</p>
+              <p><strong>Descrição:</strong> ${report.description || 'Sem descrição'}</p>
+              <p><strong>Status:</strong> Pendente</p>
+              <p><strong>Data:</strong> ${formatTimestamp(report.createdAt)}</p>
+            </div>
+          `);
+        
+        reportMarkersRef.current.push(marker);
+      });
+    } catch (error) {
+      console.error("Erro ao buscar denúncias:", error);
+    }
+  };
+
+  // Função auxiliar para obter rótulo do tipo de resíduo
+  const getWasteTypeLabel = (wasteType) => {
+    const types = {
+      'plastic': 'Plástico',
+      'glass': 'Vidro',
+      'paper': 'Papel/Papelão',
+      'electronic': 'Eletrônico',
+      'construction': 'Entulho',
+      'furniture': 'Móveis',
+      'other': 'Outro'
+    };
+    
+    return types[wasteType] || 'Não especificado';
+  };
+
+  // Função auxiliar para formatar timestamp do Firebase
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp || !timestamp.toDate) return 'Data desconhecida';
+    
+    const date = timestamp.toDate();
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   // Função auxiliar para obter HTML do ícone
@@ -327,6 +416,20 @@ const Map = () => {
             </div>
           ) : null}
         </div>
+        
+        {/* Botão de denúncia integrado ao mapa */}
+        {currentLocation && (
+          <ReportButton 
+            currentLocation={currentLocation} 
+            leafletMap={leafletMapRef.current}
+            onReportSubmitted={() => {
+              // Atualizar marcadores de denúncias quando uma nova for enviada
+              if (leafletMapRef.current) {
+                fetchAndDisplayReports(leafletMapRef.current);
+              }
+            }}
+          />
+        )}
         
         <div className="map-controls">
           <button 
