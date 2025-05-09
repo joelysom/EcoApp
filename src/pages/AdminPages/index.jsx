@@ -17,6 +17,7 @@ const AdminPoints = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'nome', direction: 'ascending' });
   const [currentUserData, setCurrentUserData] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Secret password to access this admin page
   const SECRET_ACCESS_KEY = 'ecoadmin123';
@@ -223,6 +224,35 @@ const AdminPoints = () => {
     }
   };
 
+  // Handle section navigation
+  const handleNavigate = (path) => {
+    navigate(path);
+    setDropdownOpen(false);
+  };
+
+  // Toggle dropdown visibility
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // Hide dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const dropdown = document.querySelector('.admin-dropdown');
+      if (dropdown && !dropdown.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
   // Apply search filter and sorting to users
   const filteredAndSortedUsers = [...users]
     .filter(user => 
@@ -248,7 +278,30 @@ const AdminPoints = () => {
   return (
     <div className="admin-container">
       <div className="admin-header">
-        <h1>Painel Administrador</h1>
+        <div className="admin-title-section">
+          <h1>Painel Administrador</h1>
+          <div className="admin-dropdown">
+            <button className="dropdown-toggle" onClick={toggleDropdown}>
+              Usuários ▼
+            </button>
+            {dropdownOpen && (
+              <div className="dropdown-menu">
+                <button 
+                  className="dropdown-item active" 
+                  onClick={() => handleNavigate('/adminpoints')}
+                >
+                  Usuários
+                </button>
+                <button 
+                  className="dropdown-item" 
+                  onClick={() => handleNavigate('/admincontent')}
+                >
+                  Conteúdos
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="admin-actions">
           <button className="refresh-button" onClick={handleRefresh}>
             Atualizar Lista

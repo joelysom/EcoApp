@@ -11,6 +11,7 @@ import { useAuth } from '../auth/auth';
 import Profile from '../pages/ProfilePage';
 import AdminPoints from '../pages/AdminPages';
 import Comunidade from '../pages/ComunityPage';
+import AdminContent from '../pages/AdminPages/AdminContent.jsx';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/adminpoints",
     element: <ProtectedRoute><AdminPoints /></ProtectedRoute>
+  },
+  {
+    path: "/admincontent",
+    element: <ProtectedRoute><AdminContent /></ProtectedRoute>
   },
   // Fix: Use a separate route group for the protected routes
   {
