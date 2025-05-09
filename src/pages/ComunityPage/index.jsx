@@ -3,6 +3,7 @@ import { FaLeaf, FaComment, FaHeart, FaShare, FaExclamationTriangle, FaMapMarker
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, doc, updateDoc, getDoc, arrayUnion, serverTimestamp, where } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../auth/auth';
+import ReportForm from './ReportForm_New';
 import './CommunityPage.css';
 
 const CommunityPage = () => {
@@ -26,47 +27,14 @@ const CommunityPage = () => {
   const [commentText, setCommentText] = useState({});
   const [expandedComments, setExpandedComments] = useState({});
   
-  // Estados para o formulário de nova denúncia
+  // Estado para o formulário de denúncia
   const [showReportForm, setShowReportForm] = useState(false);
-  const [newReport, setNewReport] = useState({
-    description: '',
-    wasteType: 'plastic',
-    location: {
-      address: '',
-      latitude: null,
-      longitude: null
-    }
-  });
-  const [reportImage, setReportImage] = useState(null);
-  const [reportImagePreview, setReportImagePreview] = useState(null);
-  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   
   // Carregar posts e denúncias ao montar o componente
   useEffect(() => {
     fetchPosts();
     fetchReports();
   }, []);
-  
-  // Efeito para capturar localização atual do usuário ao abrir formulário de denúncia
-  useEffect(() => {
-    if (showReportForm && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setNewReport(prev => ({
-            ...prev,
-            location: {
-              ...prev.location,
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            }
-          }));
-        },
-        (error) => {
-          console.error("Erro ao obter localização:", error);
-        }
-      );
-    }
-  }, [showReportForm]);
   
   // Função para buscar posts do Firestore
   const fetchPosts = async () => {
@@ -155,16 +123,32 @@ const CommunityPage = () => {
       const reportsQuery = query(
         collection(db, "reports"),
         where("status", "==", "pending"),
+        where("deleted", "==", false),
         orderBy("createdAt", "desc"),
         limit(10)
       );
       
-      const querySnapshot = await getDocs(reportsQuery);
-      const reportsData = querySnapshot.docs.map(doc => {
+      const collectionRequestsQuery = query(
+        collection(db, "collection_requests"),
+        where("status", "==", "pending"),
+        where("deleted", "==", false),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      );
+      
+      const [reportsSnapshot, requestsSnapshot] = await Promise.all([
+        getDocs(reportsQuery),
+        getDocs(collectionRequestsQuery)
+      ]);
+      
+      // Processar denúncias
+      const reportsData = reportsSnapshot.docs.map(doc => {
         const reportData = doc.data();
         return {
           id: doc.id,
           ...reportData,
+          serviceType: 'denunciar',
+          contentType: 'report',
           createdAt: reportData.createdAt ? 
                     (typeof reportData.createdAt.toDate === 'function' ? 
                     reportData.createdAt.toDate() : 
@@ -173,9 +157,30 @@ const CommunityPage = () => {
         };
       });
       
-      setReports(reportsData);
+      // Processar solicitações de coleta
+      const requestsData = requestsSnapshot.docs.map(doc => {
+        const requestData = doc.data();
+        return {
+          id: doc.id,
+          ...requestData,
+          serviceType: 'coletar',
+          contentType: 'collection_request',
+          createdAt: requestData.createdAt ? 
+                    (typeof requestData.createdAt.toDate === 'function' ? 
+                    requestData.createdAt.toDate() : 
+                    new Date(requestData.createdAt)) : 
+                    new Date()
+        };
+      });
+      
+      // Combinar e ordenar por data mais recente
+      const combinedData = [...reportsData, ...requestsData].sort((a, b) => 
+        b.createdAt - a.createdAt
+      );
+      
+      setReports(combinedData);
     } catch (error) {
-      console.error("Erro ao buscar denúncias:", error);
+      console.error("Erro ao buscar denúncias e solicitações:", error);
       ecoToastError("Não foi possível carregar as denúncias recentes");
     }
   };
@@ -230,7 +235,7 @@ const CommunityPage = () => {
       setNewPostImage(null);
       setNewPostImagePreview(null);
       
-      ecoToastSuccess("Postagem publicada com sucesso! 🌱");
+      ecoToastSuccess("Solicitação publicada com sucesso! 🌱");
       
       // Recarregar posts imediatamente
       await fetchPosts();
@@ -242,80 +247,10 @@ const CommunityPage = () => {
     }
   };
   
-  // Função para lidar com o envio de nova denúncia
-  const handleReportSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!currentUser) {
-      ecoToastError("Você precisa estar logado para fazer uma denúncia");
-      return;
-    }
-    
-    if (!newReport.description.trim()) {
-      ecoToastError("A descrição da denúncia não pode estar vazia");
-      return;
-    }
-    
-    if (!newReport.wasteType) {
-      ecoToastError("Você precisa selecionar um tipo de resíduo");
-      return;
-    }
-    
-    setIsSubmittingReport(true);
-    
-    try {
-      let imageUrl = null;
-      
-      // Upload da imagem, se houver
-      if (reportImage) {
-        const storageRef = ref(storage, `reports/${currentUser.uid}_${Date.now()}`);
-        const uploadResult = await uploadBytes(storageRef, reportImage);
-        imageUrl = await getDownloadURL(uploadResult.ref);
-      }
-      
-      // Criar nova denúncia no Firestore
-      const reportData = {
-        description: newReport.description,
-        wasteType: newReport.wasteType,
-        location: newReport.location,
-        imageUrl,
-        userId: currentUser.uid,
-        userName: currentUser.displayName || "Usuário anônimo",
-        userPhotoURL: currentUser.photoURL || null,
-        status: "pending",
-        deleted: false,
-        contentType: 'report', // Tipo de conteúdo para compatibilidade com o painel admin
-        createdAt: serverTimestamp()
-      };
-      
-      const docRef = await addDoc(collection(db, "reports"), reportData);
-      console.log("Denúncia criada com ID:", docRef.id);
-      
-      // Limpar o formulário e fechar
-      setNewReport({
-        description: '',
-        wasteType: 'plastic',
-        location: {
-          address: '',
-          latitude: null,
-          longitude: null
-        }
-      });
-      setReportImage(null);
-      setReportImagePreview(null);
-      setShowReportForm(false);
-      
-      ecoToastSuccess("Denúncia enviada com sucesso! Obrigado pela sua contribuição!");
-      
-      // Recarregar denúncias e mudar para a aba de denúncias
-      await fetchReports();
-      setActiveTab('reports');
-    } catch (error) {
-      console.error("Erro ao criar denúncia:", error);
-      ecoToastError("Não foi possível enviar sua denúncia. Tente novamente.");
-    } finally {
-      setIsSubmittingReport(false);
-    }
+  // Função para lidar com sucesso na submissão de denúncia do componente ReportForm
+  const handleReportSuccess = async () => {
+    await fetchReports();
+    setActiveTab('reports');
   };
   
   // Função para lidar com upload de imagem para postagem
@@ -333,31 +268,10 @@ const CommunityPage = () => {
     }
   };
   
-  // Função para lidar com upload de imagem para denúncia
-  const handleReportImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setReportImage(file);
-      
-      // Criar preview da imagem
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setReportImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
   // Função para remover imagem selecionada da postagem
   const removeImage = () => {
     setNewPostImage(null);
     setNewPostImagePreview(null);
-  };
-  
-  // Função para remover imagem selecionada da denúncia
-  const removeReportImage = () => {
-    setReportImage(null);
-    setReportImagePreview(null);
   };
   
   // Função para curtir um post
@@ -472,6 +386,7 @@ const CommunityPage = () => {
   // Função auxiliar para obter rótulo do tipo de resíduo
   const getWasteTypeLabel = (wasteType) => {
     const types = {
+      'organic': 'Orgânico',
       'plastic': 'Plástico',
       'glass': 'Vidro',
       'paper': 'Papel/Papelão',
@@ -481,7 +396,7 @@ const CommunityPage = () => {
       'other': 'Outro'
     };
     
-    return types[wasteType] || 'Não especificado';
+    return types[wasteType] || wasteType || 'Não especificado';
   };
   
   // Componente de Debugging (só aparece em desenvolvimento)
@@ -527,7 +442,7 @@ const CommunityPage = () => {
           className={`tab-button ${activeTab === 'posts' ? 'active' : ''}`}
           onClick={() => setActiveTab('posts')}
         >
-          <FaComment /> Postagens
+          <FaComment /> Solicitações de Descarte
         </button>
         <button 
           className={`tab-button ${activeTab === 'reports' ? 'active' : ''}`}
@@ -544,143 +459,20 @@ const CommunityPage = () => {
             className="create-report-button"
             onClick={() => setShowReportForm(true)}
           >
-            <FaExclamationTriangle /> Criar Nova Denúncia
+            <FaExclamationTriangle /> Criar Solicitação
           </button>
         </div>
       )}
       
-      {/* Formulário de Denúncia */}
+      {/* Componente do formulário de denúncia */}
       {showReportForm && (
-        <div className="modal-overlay">
-          <div className="modal-content report-form-modal">
-            <div className="modal-header">
-              <h2><FaExclamationTriangle /> Nova Denúncia Ambiental</h2>
-              <button className="close-button" onClick={() => setShowReportForm(false)}>×</button>
-            </div>
-            
-            <div className="modal-body">
-              <form onSubmit={handleReportSubmit}>
-                <div className="form-group">
-                  <label htmlFor="wasteType">Tipo de Resíduo:</label>
-                  <select 
-                    id="wasteType"
-                    value={newReport.wasteType}
-                    onChange={(e) => setNewReport({...newReport, wasteType: e.target.value})}
-                    required
-                  >
-                    <option value="plastic">Plástico</option>
-                    <option value="glass">Vidro</option>
-                    <option value="paper">Papel/Papelão</option>
-                    <option value="electronic">Eletrônico</option>
-                    <option value="construction">Entulho</option>
-                    <option value="furniture">Móveis</option>
-                    <option value="other">Outro</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="description">Descrição da Ocorrência:</label>
-                  <textarea 
-                    id="description"
-                    value={newReport.description}
-                    onChange={(e) => setNewReport({...newReport, description: e.target.value})}
-                    placeholder="Descreva detalhadamente o que você encontrou..."
-                    rows="4"
-                    required
-                  ></textarea>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="address">Endereço (opcional):</label>
-                  <input 
-                    type="text"
-                    id="address"
-                    value={newReport.location.address}
-                    onChange={(e) => setNewReport({
-                      ...newReport, 
-                      location: {...newReport.location, address: e.target.value}
-                    })}
-                    placeholder="Ex: Rua exemplo, nº 123, Bairro"
-                  />
-                </div>
-                
-                <div className="form-group coordinates">
-                  <div>
-                    <label htmlFor="latitude">Latitude:</label>
-                    <input 
-                      type="number" 
-                      id="latitude"
-                      value={newReport.location.latitude || ''}
-                      onChange={(e) => setNewReport({
-                        ...newReport, 
-                        location: {...newReport.location, latitude: parseFloat(e.target.value) || null}
-                      })}
-                      placeholder="Ex: -23.5505"
-                      step="any"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="longitude">Longitude:</label>
-                    <input 
-                      type="number" 
-                      id="longitude"
-                      value={newReport.location.longitude || ''}
-                      onChange={(e) => setNewReport({
-                        ...newReport, 
-                        location: {...newReport.location, longitude: parseFloat(e.target.value) || null}
-                      })}
-                      placeholder="Ex: -46.6333"
-                      step="any"
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="reportImage" className="image-upload-label">
-                    <FaCamera /> Adicionar foto da ocorrência (opcional)
-                  </label>
-                  <input
-                    type="file"
-                    id="reportImage"
-                    accept="image/*"
-                    onChange={handleReportImageChange}
-                    style={{ display: 'none' }}
-                  />
-                  
-                  {reportImagePreview && (
-                    <div className="image-preview">
-                      <img src={reportImagePreview} alt="Preview" />
-                      <button 
-                        type="button" 
-                        className="remove-image" 
-                        onClick={removeReportImage}
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="form-actions">
-                  <button 
-                    type="button" 
-                    className="cancel-button"
-                    onClick={() => setShowReportForm(false)}
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="submit-button"
-                    disabled={isSubmittingReport || !newReport.description.trim() || !newReport.wasteType}
-                  >
-                    {isSubmittingReport ? 'Enviando...' : 'Enviar Denúncia'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+        <ReportForm 
+          currentUser={currentUser}
+          onClose={() => setShowReportForm(false)}
+          onReportSubmitted={handleReportSuccess}
+          ecoToastSuccess={ecoToastSuccess}
+          ecoToastError={ecoToastError}
+        />
       )}
       
       {/* Painel de Debug */}
@@ -751,11 +543,11 @@ const CommunityPage = () => {
               {loading ? (
                 <div className="loading">
                   <div className="loading-spinner"></div>
-                  <p>Carregando postagens...</p>
+                  <p>Carregando solicitações de descarte...</p>
                 </div>
               ) : posts.length === 0 ? (
                 <div className="no-content">
-                  <p>Ainda não há postagens na comunidade. Seja o primeiro a compartilhar!</p>
+                  <p>Ainda não há solicitações na comunidade. Seja o primeiro a compartilhar!</p>
                 </div>
               ) : (
                 posts.map(post => (
@@ -849,7 +641,7 @@ const CommunityPage = () => {
                               disabled={!commentText[post.id]?.trim()}
                             >
                               Enviar
-                              </button>
+                            </button>
                           </div>
                         )}
                       </div>
@@ -879,9 +671,14 @@ const CommunityPage = () => {
                     <div className="report-title">
                       <h3>
                         <FaExclamationTriangle className="report-icon" /> 
+                        {report.serviceType === 'coletar' ? 'Solicitação de Coleta: ' : 'Denúncia: '}
                         {getWasteTypeLabel(report.wasteType)}
+                        {report.otherWasteType && ` - ${report.otherWasteType}`}
                       </h3>
-                      <span className="report-status pending">Pendente</span>
+                      <span className={`report-status ${report.status || 'pending'}`}>
+                        {report.status === 'resolved' ? 'Resolvido' : 
+                         report.status === 'in_progress' ? 'Em Andamento' : 'Pendente'}
+                      </span>
                     </div>
                     <div className="report-info">
                       <span className="report-author">
@@ -894,13 +691,35 @@ const CommunityPage = () => {
                   </div>
                   
                   <div className="report-content">
-                    <p>{report.description}</p>
+                    <p className="report-description">{report.description}</p>
                     
                     {report.imageUrl && (
                       <div className="report-image">
                         <img src={report.imageUrl} alt="Imagem da denúncia" />
                       </div>
                     )}
+                    
+                    <div className="report-details">
+                      {report.wasteType === 'construction' && (
+                        <>
+                          <p><strong>Quantidade:</strong> {report.quantity || 'Não especificada'}</p>
+                          <p><strong>Frequência:</strong> {report.frequency || 'Não especificada'}</p>
+                          <p><strong>Possui PGRCC:</strong> {report.hasPGRCC ? 'Sim' : 'Não'}</p>
+                        </>
+                      )}
+                      
+                      {report.serviceType === 'denunciar' && report.responsible && (
+                        <p><strong>Responsável pelo descarte:</strong> {report.responsible}</p>
+                      )}
+                      
+                      {report.serviceType === 'coletar' && report.collectionBy && (
+                        <p><strong>Responsável pela coleta:</strong> {report.collectionBy}</p>
+                      )}
+                      
+                      {report.userContact && (
+                        <p><strong>Contato:</strong> {report.userContact}</p>
+                      )}
+                    </div>
                     
                     {report.location && (
                       <div className="report-location">
@@ -923,7 +742,7 @@ const CommunityPage = () => {
                     </button>
                   </div>
                 </div>
-              ))
+              ))              
             )}
           </div>
         )}

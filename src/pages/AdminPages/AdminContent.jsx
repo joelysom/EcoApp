@@ -19,16 +19,17 @@ import './AdminContent.css';
 const AdminContent = () => {
   const { currentUser, ecoToastSuccess, ecoToastError } = useAuth();
   const navigate = useNavigate();
-  const [contentType, setContentType] = useState('posts');
-  const [posts, setPosts] = useState([]);
-  const [reports, setReports] = useState([]);
+  const [contentType, setContentType] = useState('solicitacoes');
+  const [solicitacoes, setSolicitacoes] = useState([]);
+  const [denuncias, setDenuncias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'descending' });
   const [filterOptions, setFilterOptions] = useState({
     dateRange: 'all',
     status: 'all',
-    type: 'all'
+    type: 'all',
+    location: '' // Added location filter
   });
   const [showFilters, setShowFilters] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -42,6 +43,7 @@ const AdminContent = () => {
     start: '',
     end: ''
   });
+  const [responsibleEntity, setResponsibleEntity] = useState('');
 
   // Secret password to access this admin page
   const SECRET_ACCESS_KEY = 'ecoadmin123';
@@ -100,25 +102,25 @@ const AdminContent = () => {
     };
 
     fetchCurrentUserData().then(() => {
-      fetchPosts();
-      fetchReports();
+      fetchSolicitacoes();
+      fetchDenuncias();
     });
   }, [currentUser, navigate, ecoToastError, ecoToastSuccess]);
 
-  // Fetch posts from Firestore
-  const fetchPosts = async () => {
+  // Fetch solicitacoes from Firestore
+  const fetchSolicitacoes = async () => {
     try {
       setLoading(true);
       const db = getFirestore();
       
-      let postsQuery;
+      let solicitacoesQuery;
       if (showDeletedContent) {
-        postsQuery = query(
+        solicitacoesQuery = query(
           collection(db, "community_posts"),
           orderBy("createdAt", "desc")
         );
       } else {
-        postsQuery = query(
+        solicitacoesQuery = query(
           collection(db, "community_posts"),
           where("deleted", "!=", true),
           orderBy("deleted", "asc"),
@@ -126,8 +128,8 @@ const AdminContent = () => {
         );
       }
       
-      const querySnapshot = await getDocs(postsQuery);
-      const postsData = [];
+      const querySnapshot = await getDocs(solicitacoesQuery);
+      const solicitacoesData = [];
       
       for (const docSnapshot of querySnapshot.docs) {
         const postData = {
@@ -136,7 +138,7 @@ const AdminContent = () => {
           createdAt: docSnapshot.data().createdAt ? 
                     docSnapshot.data().createdAt.toDate() : 
                     new Date(),
-          contentType: 'post',
+          contentType: 'solicitacao',
           comments: []
         };
         
@@ -148,32 +150,32 @@ const AdminContent = () => {
         const commentsSnapshot = await getDocs(commentsQuery);
         postData.commentsCount = commentsSnapshot.size;
         
-        postsData.push(postData);
+        solicitacoesData.push(postData);
       }
       
-      setPosts(postsData);
+      setSolicitacoes(solicitacoesData);
     } catch (error) {
-      console.error("Error fetching posts:", error);
-      ecoToastError("Erro ao carregar postagens da comunidade");
+      console.error("Error fetching solicitacoes:", error);
+      ecoToastError("Erro ao carregar solicitações de descarte");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch reports from Firestore
-  const fetchReports = async () => {
+  // Fetch denuncias from Firestore
+  const fetchDenuncias = async () => {
     try {
       setLoading(true);
       const db = getFirestore();
       
-      let reportsQuery;
+      let denunciasQuery;
       if (showDeletedContent) {
-        reportsQuery = query(
+        denunciasQuery = query(
           collection(db, "reports"),
           orderBy("createdAt", "desc")
         );
       } else {
-        reportsQuery = query(
+        denunciasQuery = query(
           collection(db, "reports"),
           where("deleted", "!=", true),
           orderBy("deleted", "asc"),
@@ -181,19 +183,19 @@ const AdminContent = () => {
         );
       }
       
-      const querySnapshot = await getDocs(reportsQuery);
-      const reportsData = querySnapshot.docs.map(doc => ({
+      const querySnapshot = await getDocs(denunciasQuery);
+      const denunciasData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt ? 
                   doc.data().createdAt.toDate() : 
                   new Date(),
-        contentType: 'report'
+        contentType: 'denuncia'
       }));
       
-      setReports(reportsData);
+      setDenuncias(denunciasData);
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      console.error("Error fetching denuncias:", error);
       ecoToastError("Erro ao carregar denúncias");
     } finally {
       setLoading(false);
@@ -212,7 +214,7 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'post' ? "community_posts" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
       
       // Soft delete - mark as deleted instead of actually removing
       await updateDoc(itemRef, {
@@ -221,29 +223,29 @@ const AdminContent = () => {
         deletedAt: new Date()
       });
       
-      if (selectedItem.contentType === 'post') {
-        setPosts(prevPosts => 
-          prevPosts.map(post => 
-            post.id === selectedItem.id 
-              ? { ...post, deleted: true, deletedAt: new Date() } 
-              : post
+      if (selectedItem.contentType === 'solicitacao') {
+        setSolicitacoes(prevSolicitacoes => 
+          prevSolicitacoes.map(solicitacao => 
+            solicitacao.id === selectedItem.id 
+              ? { ...solicitacao, deleted: true, deletedAt: new Date() } 
+              : solicitacao
           )
         );
       } else {
-        setReports(prevReports => 
-          prevReports.map(report => 
-            report.id === selectedItem.id 
-              ? { ...report, deleted: true, deletedAt: new Date() } 
-              : report
+        setDenuncias(prevDenuncias => 
+          prevDenuncias.map(denuncia => 
+            denuncia.id === selectedItem.id 
+              ? { ...denuncia, deleted: true, deletedAt: new Date() } 
+              : denuncia
           )
         );
       }
       
-      ecoToastSuccess(`${selectedItem.contentType === 'post' ? 'Postagem' : 'Denúncia'} removida com sucesso`);
+      ecoToastSuccess(`${selectedItem.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} removida com sucesso`);
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("Error deleting item:", error);
-      ecoToastError(`Erro ao remover ${selectedItem.contentType === 'post' ? 'postagem' : 'denúncia'}`);
+      ecoToastError(`Erro ao remover ${selectedItem.contentType === 'solicitacao' ? 'solicitação' : 'denúncia'}`);
     }
   };
 
@@ -257,22 +259,22 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'post' ? "community_posts" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
       
       // Permanently delete
       await deleteDoc(itemRef);
       
-      if (selectedItem.contentType === 'post') {
-        setPosts(prevPosts => prevPosts.filter(post => post.id !== selectedItem.id));
+      if (selectedItem.contentType === 'solicitacao') {
+        setSolicitacoes(prevSolicitacoes => prevSolicitacoes.filter(solicitacao => solicitacao.id !== selectedItem.id));
       } else {
-        setReports(prevReports => prevReports.filter(report => report.id !== selectedItem.id));
+        setDenuncias(prevDenuncias => prevDenuncias.filter(denuncia => denuncia.id !== selectedItem.id));
       }
       
-      ecoToastSuccess(`${selectedItem.contentType === 'post' ? 'Postagem' : 'Denúncia'} excluída permanentemente`);
+      ecoToastSuccess(`${selectedItem.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} excluída permanentemente`);
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("Error permanently deleting item:", error);
-      ecoToastError(`Erro ao excluir permanentemente ${selectedItem.contentType === 'post' ? 'postagem' : 'denúncia'}`);
+      ecoToastError(`Erro ao excluir permanentemente ${selectedItem.contentType === 'solicitacao' ? 'solicitação' : 'denúncia'}`);
     }
   };
 
@@ -282,7 +284,7 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'post' ? "community_posts" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
       
       await updateDoc(itemRef, {
         status: newStatus,
@@ -290,20 +292,20 @@ const AdminContent = () => {
         updatedBy: currentUser.uid
       });
       
-      if (selectedItem.contentType === 'post') {
-        setPosts(prevPosts => 
-          prevPosts.map(post => 
-            post.id === selectedItem.id 
-              ? { ...post, status: newStatus, updatedAt: new Date() } 
-              : post
+      if (selectedItem.contentType === 'solicitacao') {
+        setSolicitacoes(prevSolicitacoes => 
+          prevSolicitacoes.map(solicitacao => 
+            solicitacao.id === selectedItem.id 
+              ? { ...solicitacao, status: newStatus, updatedAt: new Date() } 
+              : solicitacao
           )
         );
       } else {
-        setReports(prevReports => 
-          prevReports.map(report => 
-            report.id === selectedItem.id 
-              ? { ...report, status: newStatus, updatedAt: new Date() } 
-              : report
+        setDenuncias(prevDenuncias => 
+          prevDenuncias.map(denuncia => 
+            denuncia.id === selectedItem.id 
+              ? { ...denuncia, status: newStatus, updatedAt: new Date() } 
+              : denuncia
           )
         );
       }
@@ -320,7 +322,7 @@ const AdminContent = () => {
   const handleRestoreItem = async (item) => {
     try {
       const db = getFirestore();
-      const itemRef = doc(db, item.contentType === 'post' ? "community_posts" : "reports", item.id);
+      const itemRef = doc(db, item.contentType === 'solicitacao' ? "community_posts" : "reports", item.id);
       
       await updateDoc(itemRef, {
         deleted: false,
@@ -328,28 +330,28 @@ const AdminContent = () => {
         restoredAt: new Date()
       });
       
-      if (item.contentType === 'post') {
-        setPosts(prevPosts => 
-          prevPosts.map(post => 
-            post.id === item.id 
-              ? { ...post, deleted: false, restoredAt: new Date() } 
-              : post
+      if (item.contentType === 'solicitacao') {
+        setSolicitacoes(prevSolicitacoes => 
+          prevSolicitacoes.map(solicitacao => 
+            solicitacao.id === item.id 
+              ? { ...solicitacao, deleted: false, restoredAt: new Date() } 
+              : solicitacao
           )
         );
       } else {
-        setReports(prevReports => 
-          prevReports.map(report => 
-            report.id === item.id 
-              ? { ...report, deleted: false, restoredAt: new Date() } 
-              : report
+        setDenuncias(prevDenuncias => 
+          prevDenuncias.map(denuncia => 
+            denuncia.id === item.id 
+              ? { ...denuncia, deleted: false, restoredAt: new Date() } 
+              : denuncia
           )
         );
       }
       
-      ecoToastSuccess(`${item.contentType === 'post' ? 'Postagem' : 'Denúncia'} restaurada com sucesso`);
+      ecoToastSuccess(`${item.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} restaurada com sucesso`);
     } catch (error) {
       console.error("Error restoring item:", error);
-      ecoToastError(`Erro ao restaurar ${item.contentType === 'post' ? 'postagem' : 'denúncia'}`);
+      ecoToastError(`Erro ao restaurar ${item.contentType === 'solicitacao' ? 'solicitação' : 'denúncia'}`);
     }
   };
 
@@ -443,6 +445,12 @@ const AdminContent = () => {
     return item.wasteType === filterOptions.type;
   };
 
+  // Apply location filter
+  const applyLocationFilter = (item) => {
+    if (!filterOptions.location) return true;
+    return item.location?.address?.toLowerCase().includes(filterOptions.location.toLowerCase());
+  };
+
   // Format date
   const formatDate = (date) => {
     if (!date) return '-';
@@ -464,6 +472,7 @@ const AdminContent = () => {
       'electronic': 'Eletrônico',
       'construction': 'Entulho',
       'furniture': 'Móveis',
+      'organic': 'Orgânico',
       'other': 'Outro'
     };
     
@@ -498,7 +507,7 @@ const AdminContent = () => {
 
   // Apply search, filters and sorting
   const getFilteredContent = () => {
-    const contentList = contentType === 'posts' ? posts : reports;
+    const contentList = contentType === 'solicitacoes' ? solicitacoes : denuncias;
     
     return contentList
       .filter(item => 
@@ -509,6 +518,7 @@ const AdminContent = () => {
       .filter(applyDateFilter)
       .filter(applyStatusFilter)
       .filter(applyTypeFilter)
+      .filter(applyLocationFilter) // Apply location filter
       .sort((a, b) => {
         // Handle undefined values
         const aValue = sortConfig.key === 'createdAt' ? a[sortConfig.key] : (a[sortConfig.key] ?? '');
@@ -532,7 +542,8 @@ const AdminContent = () => {
     setFilterOptions({
       dateRange: 'all',
       status: 'all',
-      type: 'all'
+      type: 'all',
+      location: '' // Reset location filter
     });
     setDateRange({
       start: '',
@@ -541,14 +552,55 @@ const AdminContent = () => {
     setSearchTerm('');
   };
 
+  // Handle responsible entity assignment
+  const handleResponsibleEntityAssignment = async () => {
+    if (!selectedItem || !responsibleEntity) return;
+
+    try {
+      const db = getFirestore();
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
+
+      await updateDoc(itemRef, {
+        responsibleEntity,
+        status: 'in_progress',
+        updatedAt: new Date(),
+        updatedBy: currentUser.uid
+      });
+
+      if (selectedItem.contentType === 'solicitacao') {
+        setSolicitacoes(prevSolicitacoes => 
+          prevSolicitacoes.map(solicitacao => 
+            solicitacao.id === selectedItem.id 
+              ? { ...solicitacao, responsibleEntity, status: 'in_progress', updatedAt: new Date() } 
+              : solicitacao
+          )
+        );
+      } else {
+        setDenuncias(prevDenuncias => 
+          prevDenuncias.map(denuncia => 
+            denuncia.id === selectedItem.id 
+              ? { ...denuncia, responsibleEntity, status: 'in_progress', updatedAt: new Date() } 
+              : denuncia
+          )
+        );
+      }
+
+      ecoToastSuccess(`Responsável atribuído: ${responsibleEntity}`);
+      setStatusModalOpen(false);
+    } catch (error) {
+      console.error("Error assigning responsible entity:", error);
+      ecoToastError("Erro ao atribuir responsável");
+    }
+  };
+
   return (
     <div className="admin-container">
       <div className="admin-header">
         <h1>Gerenciamento de Conteúdo</h1>
         <div className="admin-actions">
           <button className="refresh-button" onClick={() => {
-            fetchPosts();
-            fetchReports();
+            fetchSolicitacoes();
+            fetchDenuncias();
             ecoToastSuccess("Conteúdo atualizado");
           }}>
             Atualizar
@@ -561,16 +613,16 @@ const AdminContent = () => {
       
       <div className="content-type-tabs">
         <button 
-          className={`tab-button ${contentType === 'posts' ? 'active' : ''}`}
-          onClick={() => setContentType('posts')}
+          className={`tab-button ${contentType === 'solicitacoes' ? 'active' : ''}`}
+          onClick={() => setContentType('solicitacoes')}
         >
-          <FaComment /> Postagens ({posts.length})
+          <FaComment /> Solicitações de Descarte ({solicitacoes.length})
         </button>
         <button 
-          className={`tab-button ${contentType === 'reports' ? 'active' : ''}`}
-          onClick={() => setContentType('reports')}
+          className={`tab-button ${contentType === 'denuncias' ? 'active' : ''}`}
+          onClick={() => setContentType('denuncias')}
         >
-          <FaExclamationTriangle /> Denúncias ({reports.length})
+          <FaExclamationTriangle /> Denúncias ({denuncias.length})
         </button>
       </div>
       
@@ -578,7 +630,7 @@ const AdminContent = () => {
         <div className="search-box">
           <input
             type="text"
-            placeholder={`Buscar ${contentType === 'posts' ? 'postagens' : 'denúncias'}...`}
+            placeholder={`Buscar ${contentType === 'solicitacoes' ? 'solicitações' : 'denúncias'}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -615,7 +667,7 @@ const AdminContent = () => {
               <option value="all">Todos</option>
               <option value="active">Ativos</option>
               <option value="deleted">Removidos</option>
-              {contentType === 'reports' && (
+              {contentType === 'denuncias' && (
                 <>
                   <option value="pending">Pendentes</option>
                   <option value="in_progress">Em andamento</option>
@@ -661,7 +713,7 @@ const AdminContent = () => {
             </div>
           )}
           
-          {contentType === 'reports' && (
+          {contentType === 'denuncias' && (
             <div className="filter-section">
               <label>Tipo de resíduo:</label>
               <select
@@ -680,6 +732,16 @@ const AdminContent = () => {
             </div>
           )}
           
+          <div className="filter-section">
+            <label>Localização:</label>
+            <input
+              type="text"
+              placeholder="Digite a localização"
+              value={filterOptions.location}
+              onChange={(e) => handleFilterChange('location', e.target.value)}
+            />
+          </div>
+          
           <button className="reset-filters" onClick={resetFilters}>
             Limpar filtros
           </button>
@@ -687,7 +749,7 @@ const AdminContent = () => {
       )}
       
       <div className="results-count">
-        {filteredContent.length} {contentType === 'posts' ? 'postagens' : 'denúncias'} encontradas
+        {filteredContent.length} {contentType === 'solicitacoes' ? 'solicitações' : 'denúncias'} encontradas
       </div>
       
       {loading ? (
@@ -697,7 +759,7 @@ const AdminContent = () => {
         </div>
       ) : (
         <div className="content-table-container">
-          {contentType === 'posts' ? (
+          {contentType === 'solicitacoes' ? (
             <table className="content-table">
               <thead>
                 <tr>
@@ -740,33 +802,33 @@ const AdminContent = () => {
               </thead>
               <tbody>
                 {filteredContent.length > 0 ? (
-                  filteredContent.map((post) => (
-                    <tr key={post.id} className={post.deleted ? 'deleted-row' : ''}>
-                      <td>{post.userName || 'Anônimo'}</td>
+                  filteredContent.map((solicitacao) => (
+                    <tr key={solicitacao.id} className={solicitacao.deleted ? 'deleted-row' : ''}>
+                      <td>{solicitacao.userName || 'Anônimo'}</td>
                       <td className="content-cell">
                         <div className="truncated-content">
-                          {post.content?.slice(0, 70)}{post.content?.length > 70 ? '...' : ''}
+                          {solicitacao.content?.slice(0, 70)}{solicitacao.content?.length > 70 ? '...' : ''}
                         </div>
                       </td>
-                      <td>{formatDate(post.createdAt)}</td>
-                      <td>{post.likes || 0}</td>
-                      <td>{post.commentsCount || 0}</td>
-                      <td>{getStatusBadge(post)}</td>
+                      <td>{formatDate(solicitacao.createdAt)}</td>
+                      <td>{solicitacao.likes || 0}</td>
+                      <td>{solicitacao.commentsCount || 0}</td>
+                      <td>{getStatusBadge(solicitacao)}</td>
                       <td className="actions-cell">
                         <button 
                           className="action-button view-button" 
                           title="Ver detalhes"
-                          onClick={() => handleViewItem(post)}
+                          onClick={() => handleViewItem(solicitacao)}
                         >
                           <FaEye />
                         </button>
                         
-                        {!post.deleted ? (
+                        {!solicitacao.deleted ? (
                           <button 
                             className="action-button delete-button" 
                             title="Remover"
                             onClick={() => {
-                              setSelectedItem(post);
+                              setSelectedItem(solicitacao);
                               setDeleteModalOpen(true);
                             }}
                           >
@@ -776,7 +838,7 @@ const AdminContent = () => {
                           <button 
                             className="action-button restore-button" 
                             title="Restaurar"
-                            onClick={() => handleRestoreItem(post)}
+                            onClick={() => handleRestoreItem(solicitacao)}
                           >
                             <FaCheck />
                           </button>
@@ -786,8 +848,8 @@ const AdminContent = () => {
                           className="action-button status-button" 
                           title="Mudar status"
                           onClick={() => {
-                            setSelectedItem(post);
-                            setNewStatus(post.status || 'active');
+                            setSelectedItem(solicitacao);
+                            setNewStatus(solicitacao.status || 'active');
                             setStatusModalOpen(true);
                           }}
                         >
@@ -799,7 +861,7 @@ const AdminContent = () => {
                 ) : (
                   <tr>
                     <td colSpan="7" className="no-content">
-                      Nenhuma postagem encontrada com os filtros atuais
+                      Nenhuma solicitação encontrada com os filtros atuais
                     </td>
                   </tr>
                 )}
@@ -841,39 +903,39 @@ const AdminContent = () => {
               </thead>
               <tbody>
                 {filteredContent.length > 0 ? (
-                  filteredContent.map((report) => (
-                    <tr key={report.id} className={report.deleted ? 'deleted-row' : ''}>
-                      <td>{report.userName || 'Anônimo'}</td>
-                      <td>{getWasteTypeLabel(report.wasteType)}</td>
+                  filteredContent.map((denuncia) => (
+                    <tr key={denuncia.id} className={denuncia.deleted ? 'deleted-row' : ''}>
+                      <td>{denuncia.userName || 'Anônimo'}</td>
+                      <td>{getWasteTypeLabel(denuncia.wasteType)}</td>
                       <td className="content-cell">
                         <div className="truncated-content">
-                        {report.description?.slice(0, 70)}{report.description?.length > 70 ? '...' : ''}
+                        {denuncia.description?.slice(0, 70)}{denuncia.description?.length > 70 ? '...' : ''}
                         </div>
                       </td>
-                      <td>{formatDate(report.createdAt)}</td>
+                      <td>{formatDate(denuncia.createdAt)}</td>
                       <td>
-                        {report.location ? (
-                          <span title={`${report.location.latitude}, ${report.location.longitude}`}>
-                            {report.location.address || 'Ver coordenadas'}
+                        {denuncia.location ? (
+                          <span title={`${denuncia.location.latitude}, ${denuncia.location.longitude}`}>
+                            {denuncia.location.address || 'Ver coordenadas'}
                           </span>
                         ) : 'Não informada'}
                       </td>
-                      <td>{getStatusBadge(report)}</td>
+                      <td>{getStatusBadge(denuncia)}</td>
                       <td className="actions-cell">
                         <button 
                           className="action-button view-button" 
                           title="Ver detalhes"
-                          onClick={() => handleViewItem(report)}
+                          onClick={() => handleViewItem(denuncia)}
                         >
                           <FaEye />
                         </button>
                         
-                        {!report.deleted ? (
+                        {!denuncia.deleted ? (
                           <button 
                             className="action-button delete-button" 
                             title="Remover"
                             onClick={() => {
-                              setSelectedItem(report);
+                              setSelectedItem(denuncia);
                               setDeleteModalOpen(true);
                             }}
                           >
@@ -883,7 +945,7 @@ const AdminContent = () => {
                           <button 
                             className="action-button restore-button" 
                             title="Restaurar"
-                            onClick={() => handleRestoreItem(report)}
+                            onClick={() => handleRestoreItem(denuncia)}
                           >
                             <FaCheck />
                           </button>
@@ -893,8 +955,8 @@ const AdminContent = () => {
                           className="action-button status-button" 
                           title="Mudar status"
                           onClick={() => {
-                            setSelectedItem(report);
-                            setNewStatus(report.status || 'pending');
+                            setSelectedItem(denuncia);
+                            setNewStatus(denuncia.status || 'pending');
                             setStatusModalOpen(true);
                           }}
                         >
@@ -922,13 +984,13 @@ const AdminContent = () => {
           <div className="modal-content view-modal">
             <div className="modal-header">
               <h2>
-                {selectedItem.contentType === 'post' ? 'Detalhes da Postagem' : 'Detalhes da Denúncia'}
+                {selectedItem.contentType === 'solicitacao' ? 'Detalhes da Solicitação' : 'Detalhes da Denúncia'}
               </h2>
               <button className="close-button" onClick={() => setViewModalOpen(false)}>×</button>
             </div>
             
             <div className="modal-body">
-              {selectedItem.contentType === 'post' ? (
+              {selectedItem.contentType === 'solicitacao' ? (
                 <>
                   <div className="detail-row">
                     <div className="detail-label">ID:</div>
@@ -959,7 +1021,7 @@ const AdminContent = () => {
                   </div>
                   
                   <div className="detail-content">
-                    <h3>Conteúdo da Postagem</h3>
+                    <h3>Conteúdo da Solicitação</h3>
                     <div className="content-text">
                       {selectedItem.content || 'Sem conteúdo de texto'}
                     </div>
@@ -967,7 +1029,7 @@ const AdminContent = () => {
                     {selectedItem.imageUrl && (
                       <div className="content-image">
                         <h4>Imagem anexada</h4>
-                        <img src={selectedItem.imageUrl} alt="Conteúdo da postagem" />
+                        <img src={selectedItem.imageUrl} alt="Conteúdo da solicitação" />
                       </div>
                     )}
                   </div>
@@ -1041,6 +1103,14 @@ const AdminContent = () => {
                   </div>
                 </div>
               )}
+
+              {/* Display the responsible entity if available */}
+              {selectedItem.contentType === 'report' && selectedItem.responsibleEntity && (
+                <div className="detail-row">
+                  <div className="detail-label">Responsável pela coleta:</div>
+                  <div className="detail-value">{selectedItem.responsibleEntity}</div>
+                </div>
+              )}
             </div>
             
             <div className="modal-footer">
@@ -1073,7 +1143,7 @@ const AdminContent = () => {
                 onClick={() => {
                   setViewModalOpen(false);
                   setNewStatus(selectedItem.status || 
-                    (selectedItem.contentType === 'post' ? 'active' : 'pending'));
+                    (selectedItem.contentType === 'solicitacao' ? 'active' : 'pending'));
                   setStatusModalOpen(true);
                 }}
               >
@@ -1099,17 +1169,17 @@ const AdminContent = () => {
               </div>
               
               <p>
-                Tem certeza que deseja remover {selectedItem.contentType === 'post' ? 'esta postagem' : 'esta denúncia'}?
+                Tem certeza que deseja remover {selectedItem.contentType === 'solicitacao' ? 'esta solicitação' : 'esta denúncia'}?
               </p>
               
               <p className="item-details">
-                <strong>{selectedItem.contentType === 'post' ? 'Postagem' : 'Denúncia'} de:</strong> {selectedItem.userName || 'Anônimo'}<br />
+                <strong>{selectedItem.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} de:</strong> {selectedItem.userName || 'Anônimo'}<br />
                 <strong>Criado em:</strong> {formatDate(selectedItem.createdAt)}
               </p>
               
               <div className="content-preview">
-                {selectedItem.contentType === 'post' ? selectedItem.content?.slice(0, 100) : selectedItem.description?.slice(0, 100)}
-                {(selectedItem.contentType === 'post' ? selectedItem.content?.length : selectedItem.description?.length) > 100 ? '...' : ''}
+                {selectedItem.contentType === 'solicitacao' ? selectedItem.content?.slice(0, 100) : selectedItem.description?.slice(0, 100)}
+                {(selectedItem.contentType === 'solicitacao' ? selectedItem.content?.length : selectedItem.description?.length) > 100 ? '...' : ''}
               </div>
               
               {selectedItem.deleted && (
@@ -1168,13 +1238,13 @@ const AdminContent = () => {
             
             <div className="modal-body">
               <p>
-                Alterar o status {selectedItem.contentType === 'post' ? 'da postagem' : 'da denúncia'} de <strong>{selectedItem.userName || 'Anônimo'}</strong>:
+                Alterar o status {selectedItem.contentType === 'solicitacao' ? 'da solicitação' : 'da denúncia'} de <strong>{selectedItem.userName || 'Anônimo'}</strong>:
               </p>
               
               <div className="status-form">
                 <label htmlFor="status-select">Novo status:</label>
                 
-                {selectedItem.contentType === 'post' ? (
+                {selectedItem.contentType === 'solicitacao' ? (
                   <select 
                     id="status-select"
                     value={newStatus}
@@ -1199,6 +1269,22 @@ const AdminContent = () => {
                 )}
               </div>
               
+              {selectedItem.contentType === 'report' && (
+                <div className="responsible-entity-form">
+                  <label htmlFor="responsible-entity-select">Responsável pela coleta:</label>
+                  <select 
+                    id="responsible-entity-select"
+                    value={responsibleEntity}
+                    onChange={(e) => setResponsibleEntity(e.target.value)}
+                  >
+                    <option value="">Selecione</option>
+                    <option value="EMLURB">EMLURB</option>
+                    <option value="Catadores">Catadores</option>
+                    <option value="ONG ou Instituição de Reciclagem">ONG ou Instituição de Reciclagem</option>
+                  </select>
+                </div>
+              )}
+              
               <div className="current-status">
                 <span>Status atual: </span> 
                 {getStatusBadge(selectedItem)}
@@ -1207,12 +1293,21 @@ const AdminContent = () => {
             
             <div className="modal-footer">
               <button className="cancel-button" onClick={() => setStatusModalOpen(false)}>Cancelar</button>
-              <button 
-                className="update-button"
-                onClick={handleStatusUpdate}
-              >
-                <FaCheck /> Atualizar Status
-              </button>
+              {selectedItem.contentType === 'report' && responsibleEntity ? (
+                <button 
+                  className="update-button"
+                  onClick={handleResponsibleEntityAssignment}
+                >
+                  <FaCheck /> Atribuir Responsável e Atualizar Status
+                </button>
+              ) : (
+                <button 
+                  className="update-button"
+                  onClick={handleStatusUpdate}
+                >
+                  <FaCheck /> Atualizar Status
+                </button>
+              )}
             </div>
           </div>
         </div>
