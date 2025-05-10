@@ -9,13 +9,6 @@ const FullFormPage = () => {
   const isDemo = location.state?.isDemo || false;
   const { currentUser } = useAuth();
 
-  // Debug logs
-  useEffect(() => {
-    console.log("FullFormPage - currentUser:", currentUser);
-    console.log("FullFormPage - isAnonymous:", currentUser?.isAnonymous);
-    console.log("FullFormPage - isDemo:", isDemo);
-  }, [currentUser, isDemo]);
-
   return (
     <div className={styles.fullFormPage}>
       <ReportForm

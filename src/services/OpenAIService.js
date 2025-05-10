@@ -12,7 +12,7 @@ class OpenAIService {
       const response = await axios.post(
         API_URL,
         {
-          model: "gpt-4-vision-preview",
+          model: "gpt-4.1",
           messages: [
             {
               role: "user",
@@ -54,7 +54,7 @@ class OpenAIService {
       const response = await axios.post(
         API_URL,
         {
-          model: "gpt-4-vision-preview",
+          model: "gpt-4.1",
           messages: [
             {
               role: "user",
