@@ -4,6 +4,50 @@ import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/fire
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './ReportForm.css';
 
+// Add OpenAI configuration
+const OPENAI_API_KEY = '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';
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+
+// Function to assess risk level
+async function assessRiskLevel(reportData) {
+  try {
+    const prompt = `Analyze this environmental report and classify its risk level as either 'CRITICAL', 'HIGH', 'MODERATE', or 'LOW'. Consider the following factors:
+    - Waste type: ${reportData.wasteType}
+    - Description: ${reportData.description}
+    - Quantity: ${reportData.quantity}
+    - Frequency: ${reportData.frequency}
+    - Has PGRCC: ${reportData.hasPGRCC}
+    
+    Respond only with one of these levels: CRITICAL, HIGH, MODERATE, or LOW`;
+
+    const response = await fetch(OPENAI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [{
+          role: "user",
+          content: prompt
+        }],
+        temperature: 0.3,
+        max_tokens: 10
+      })
+    });
+
+    const data = await response.json();
+    if (data.choices && data.choices[0]) {
+      return data.choices[0].message.content.trim();
+    }
+    return 'MODERATE'; // Default fallback
+  } catch (error) {
+    console.error('Error assessing risk level:', error);
+    return 'MODERATE'; // Default fallback
+  }
+}
+
 const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ecoToastSuccess }) => {
   const db = getFirestore();
   const storage = getStorage();
@@ -36,6 +80,7 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
   const [formErrors, setFormErrors] = useState({});
   const [showPGRCCInfo, setShowPGRCCInfo] = useState(false);
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [isAssessingRisk, setIsAssessingRisk] = useState(false);
   
   // Efeito para capturar localização atual do usuário ao abrir formulário
   useEffect(() => {
@@ -153,15 +198,74 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
   const useCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setReportData({
-            ...reportData,
-            location: {
-              ...reportData.location,
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          try {
+            // Usar a API Nominatim do OpenStreetMap para geocodificação reversa
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+              {
+                headers: {
+                  'Accept-Language': 'pt-BR,pt', // Para tentar obter resultados em português
+                  'User-Agent': 'EcoApp/1.0' // É boa prática identificar sua aplicação
+                }
+              }
+            );
+            
+            const data = await response.json();
+            
+            if (data && data.display_name) {
+              // Formatar o endereço de maneira mais amigável
+              let address = '';
+              if (data.address) {
+                const addr = data.address;
+                const parts = [];
+                
+                if (addr.road) parts.push(addr.road);
+                if (addr.house_number) parts.push(addr.house_number);
+                if (addr.suburb) parts.push(addr.suburb);
+                if (addr.city || addr.town) parts.push(addr.city || addr.town);
+                if (addr.state) parts.push(addr.state);
+                
+                address = parts.join(', ');
+              } else {
+                address = data.display_name;
+              }
+              
+              setReportData({
+                ...reportData,
+                location: {
+                  address: address,
+                  latitude: latitude,
+                  longitude: longitude
+                }
+              });
+            } else {
+              // Se não conseguir obter o endereço, pelo menos salva as coordenadas
+              setReportData({
+                ...reportData,
+                location: {
+                  ...reportData.location,
+                  latitude: latitude,
+                  longitude: longitude
+                }
+              });
+              ecoToastError("Não foi possível obter o endereço completo, mas as coordenadas foram salvas.");
             }
-          });
+          } catch (error) {
+            console.error("Erro ao obter endereço:", error);
+            // Se houver erro na geocodificação, pelo menos salva as coordenadas
+            setReportData({
+              ...reportData,
+              location: {
+                ...reportData.location,
+                latitude: latitude,
+                longitude: longitude
+              }
+            });
+            ecoToastError("Não foi possível obter o endereço completo, mas as coordenadas foram salvas.");
+          }
         },
         (error) => {
           console.error("Erro ao obter localização:", error);
@@ -189,8 +293,12 @@ const handleSubmitForm = async (e) => {
   }
 
   setIsSubmittingReport(true);
+  setIsAssessingRisk(true);
 
   try {
+    // Assess risk level
+    const riskLevel = await assessRiskLevel(reportData);
+    
     let imageUrl = null;
 
     // Upload da imagem, se houver
@@ -230,7 +338,8 @@ const handleSubmitForm = async (e) => {
       status: "pending",
       deleted: false,
       contentType: serviceType === 'denunciar' ? 'report' : 'collection_request',
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      riskLevel: riskLevel // Add risk level to the document
     };
 
     const collectionName = serviceType === 'denunciar' ? "reports" : "collection_requests";
@@ -282,6 +391,7 @@ const handleSubmitForm = async (e) => {
     ecoToastError(`Não foi possível enviar sua ${serviceType === 'denunciar' ? 'denúncia' : 'solicitação de coleta'}. Tente novamente.`);
   } finally {
     setIsSubmittingReport(false);
+    setIsAssessingRisk(false);
   }
 };
 
@@ -816,7 +926,7 @@ const handleSubmitForm = async (e) => {
                     className="submit-button"
                     disabled={isSubmittingReport}
                   >
-                    {isSubmittingReport ? 'Enviando...' : 'Confirmar e Enviar'}
+                    {isAssessingRisk ? 'Analisando risco...' : isSubmittingReport ? 'Enviando...' : 'Confirmar e Enviar'}
                   </button>
                 </>
               )}

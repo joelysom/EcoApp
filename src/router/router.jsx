@@ -13,6 +13,7 @@ import AdminPoints from '../pages/AdminPages';
 import Comunidade from '../pages/ComunityPage';
 import AdminContent from '../pages/AdminPages/AdminContent.jsx';
 import DemoPage from '../pages/demopage';
+import DemoMap from '../pages/demopage/DemoMap';
 import FullFormPage from '../pages/FullFormPage';
 
 // Protected Route component
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
   {
     path: "/admincontent",
     element: <ProtectedRoute><AdminContent /></ProtectedRoute>
+  },
+  {
+    path: "/demomap",
+    element: <ProtectedRoute><DemoMap /></ProtectedRoute>
   },
   // Fix: Use a separate route group for the protected routes
   {

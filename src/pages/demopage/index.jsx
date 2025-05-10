@@ -25,24 +25,37 @@ const DemoPage = () => {
     }
   };
 
+  const handleMapDemo = async () => {
+    try {
+      await loginAsAnonymous();
+      navigate('/demomap');
+    } catch (error) {
+      console.error('Failed to access map demo:', error);
+    }
+  };
+
   return (
     <div className="container">
       <div className="demoCard">
-        <img src="/src/assets/icon/icon.webp" alt="EcoApp Logo" className="icon" />
+        <img src="/src/assets/icon/icon.webp" alt="ColetaAI Logo" className="icon" />
         <h1 className="title">Demonstração ColetaAi</h1>
         
         <div className="section">
           <button className="button" onClick={handleDemoAccess}>
-            Acessar Demo
+            Demo Gestão de solicitações e denúncias
           </button>
           
           <button className="button secondaryButton" onClick={handleFormDemo}>
-            Demo Formulário
+            Demo Realizar denúncia/solicitação
+          </button>
+
+          <button className="button secondaryButton" onClick={handleMapDemo}>
+            Demo Mapa e Monitoramento
           </button>
         </div>
 
         <div className="infoText">
-          Explore as funcionalidades do EcoApp em modo demonstração
+          Explore as funcionalidades do ColetaAI em modo demonstração
         </div>
       </div>
     </div>

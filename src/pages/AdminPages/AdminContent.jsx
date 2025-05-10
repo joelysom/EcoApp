@@ -29,7 +29,8 @@ const AdminContent = () => {
     dateRange: 'all',
     status: 'all',
     type: 'all',
-    location: '' // Added location filter
+    location: '',
+    riskLevel: 'all' // Novo filtro de nível de risco
   });
   const [showFilters, setShowFilters] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -290,22 +291,22 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'collection_request' ? "collection_requests" : "reports", selectedItem.id);
       
       // Permanently delete
       await deleteDoc(itemRef);
       
-      if (selectedItem.contentType === 'solicitacao') {
+      if (selectedItem.contentType === 'collection_request') {
         setSolicitacoes(prevSolicitacoes => prevSolicitacoes.filter(solicitacao => solicitacao.id !== selectedItem.id));
       } else {
         setDenuncias(prevDenuncias => prevDenuncias.filter(denuncia => denuncia.id !== selectedItem.id));
       }
       
-      ecoToastSuccess(`${selectedItem.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} excluída permanentemente`);
+      ecoToastSuccess(`${selectedItem.contentType === 'collection_request' ? 'Solicitação' : 'Denúncia'} excluída permanentemente`);
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("Error permanently deleting item:", error);
-      ecoToastError(`Erro ao excluir permanentemente ${selectedItem.contentType === 'solicitacao' ? 'solicitação' : 'denúncia'}`);
+      ecoToastError(`Erro ao excluir permanentemente ${selectedItem.contentType === 'collection_request' ? 'solicitação' : 'denúncia'}`);
     }
   };
 
@@ -315,7 +316,7 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'collection_request' ? "collection_requests" : "reports", selectedItem.id);
       
       await updateDoc(itemRef, {
         status: newStatus,
@@ -323,7 +324,7 @@ const AdminContent = () => {
         updatedBy: currentUser.uid
       });
       
-      if (selectedItem.contentType === 'solicitacao') {
+      if (selectedItem.contentType === 'collection_request') {
         setSolicitacoes(prevSolicitacoes => 
           prevSolicitacoes.map(solicitacao => 
             solicitacao.id === selectedItem.id 
@@ -355,7 +356,7 @@ const AdminContent = () => {
 
     try {
       const db = getFirestore();
-      const collectionName = selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports";
+      const collectionName = selectedItem.contentType === 'collection_request' ? "collection_requests" : "reports";
       
       // Check if document exists before updating
       const exists = await checkDocumentExists(db, collectionName, selectedItem.id);
@@ -383,7 +384,7 @@ const AdminContent = () => {
         updatedAt: new Date()
       });
 
-      if (selectedItem.contentType === 'solicitacao') {
+      if (selectedItem.contentType === 'collection_request') {
         setSolicitacoes(prev => prev.map(item => 
           item.id === selectedItem.id ? updateItem(item) : item
         ));
@@ -405,7 +406,7 @@ const AdminContent = () => {
   const handleRestoreItem = async (item) => {
     try {
       const db = getFirestore();
-      const itemRef = doc(db, item.contentType === 'solicitacao' ? "collection_requests" : "reports", item.id);
+      const itemRef = doc(db, item.contentType === 'collection_request' ? "collection_requests" : "reports", item.id);
       
       await updateDoc(itemRef, {
         deleted: false,
@@ -413,7 +414,7 @@ const AdminContent = () => {
         restoredAt: new Date()
       });
       
-      if (item.contentType === 'solicitacao') {
+      if (item.contentType === 'collection_request') {
         setSolicitacoes(prevSolicitacoes => 
           prevSolicitacoes.map(solicitacao => 
             solicitacao.id === item.id 
@@ -431,10 +432,10 @@ const AdminContent = () => {
         );
       }
       
-      ecoToastSuccess(`${item.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} restaurada com sucesso`);
+      ecoToastSuccess(`${item.contentType === 'collection_request' ? 'Solicitação' : 'Denúncia'} restaurada com sucesso`);
     } catch (error) {
       console.error("Error restoring item:", error);
-      ecoToastError(`Erro ao restaurar ${item.contentType === 'solicitacao' ? 'solicitação' : 'denúncia'}`);
+      ecoToastError(`Erro ao restaurar ${item.contentType === 'collection_request' ? 'solicitação' : 'denúncia'}`);
     }
   };
 
@@ -534,6 +535,16 @@ const AdminContent = () => {
     return item.location?.address?.toLowerCase().includes(filterOptions.location.toLowerCase());
   };
 
+  // Adicionar função para filtrar por nível de risco
+  const applyRiskLevelFilter = (item) => {
+    if (filterOptions.riskLevel === 'all') return true;
+    
+    const itemRiskLevel = item.riskLevel?.toLowerCase() || 'nao-avaliado';
+    const filterRiskLevel = filterOptions.riskLevel.toLowerCase();
+    
+    return itemRiskLevel === filterRiskLevel;
+  };
+
   // Format date
   const formatDate = (date) => {
     if (!date) return '-';
@@ -612,20 +623,66 @@ const AdminContent = () => {
     );
   };
 
+  // Atualizar a função getRiskLevelBadge para usar português
+  const getRiskLevelClass = (riskLevel) => {
+    if (!riskLevel) return 'nao-avaliado';
+    
+    const mapping = {
+      'CRITICAL': 'critico',
+      'HIGH': 'alto',
+      'MODERATE': 'moderado',
+      'LOW': 'baixo',
+      'RISCO_CRITICO': 'critico',
+      'RISCO_ALTO': 'alto',
+      'RISCO_MODERADO': 'moderado',
+      'RISCO_BAIXO': 'baixo'
+    };
+
+    return mapping[riskLevel] || riskLevel.toLowerCase();
+  };
+
+  const getRiskLevelText = (riskLevel) => {
+    if (!riskLevel) return 'NÃO AVALIADO';
+    
+    const mapping = {
+      'CRITICAL': 'CRÍTICO',
+      'HIGH': 'ALTO',
+      'MODERATE': 'MODERADO',
+      'LOW': 'BAIXO',
+      'RISCO_CRITICO': 'CRÍTICO',
+      'RISCO_ALTO': 'ALTO',
+      'RISCO_MODERADO': 'MODERADO',
+      'RISCO_BAIXO': 'BAIXO'
+    };
+
+    return mapping[riskLevel] || riskLevel;
+  };
+
+  const getRiskLevelBadge = (riskLevel) => {
+    const className = getRiskLevelClass(riskLevel);
+    const text = getRiskLevelText(riskLevel);
+    
+    return (
+      <span className={`risk-level ${className}`}>
+        {text}
+      </span>
+    );
+  };
+
   // Apply search, filters and sorting
   const getFilteredContent = () => {
     const contentList = contentType === 'solicitacoes' ? solicitacoes : denuncias;
     
     return contentList
       .filter(item => 
-        item.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        (item.contentType === 'collection_request' ? item.content : item.description)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.userName?.toLowerCase().includes(searchTerm.toLowerCase())
       )
       .filter(applyDateFilter)
       .filter(applyStatusFilter)
       .filter(applyTypeFilter)
-      .filter(applyLocationFilter) // Apply location filter
+      .filter(applyLocationFilter)
+      .filter(applyRiskLevelFilter) // Adicionar o novo filtro
       .sort((a, b) => {
         // Handle undefined values
         const aValue = sortConfig.key === 'createdAt' ? a[sortConfig.key] : (a[sortConfig.key] ?? '');
@@ -650,7 +707,8 @@ const AdminContent = () => {
       dateRange: 'all',
       status: 'all',
       type: 'all',
-      location: '' // Reset location filter
+      location: '',
+      riskLevel: 'all' // Resetar o filtro de risco
     });
     setDateRange({
       start: '',
@@ -665,7 +723,7 @@ const AdminContent = () => {
 
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'collection_request' ? "collection_requests" : "reports", selectedItem.id);
 
       await updateDoc(itemRef, {
         responsibleEntity,
@@ -674,7 +732,7 @@ const AdminContent = () => {
         updatedBy: currentUser.uid
       });
 
-      if (selectedItem.contentType === 'solicitacao') {
+      if (selectedItem.contentType === 'collection_request') {
         setSolicitacoes(prevSolicitacoes => 
           prevSolicitacoes.map(solicitacao => 
             solicitacao.id === selectedItem.id 
@@ -748,8 +806,7 @@ const AdminContent = () => {
       <thead>
         <tr>
           <th onClick={() => handleSort('userName')} className="sortable">
-            Autor
-            {sortConfig.key === 'userName' && (
+            Autor {sortConfig.key === 'userName' && (
               <span className="sort-indicator">
                 {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
               </span>
@@ -757,14 +814,21 @@ const AdminContent = () => {
           </th>
           <th>Tipo de Resíduo</th>
           <th onClick={() => handleSort('createdAt')} className="sortable">
-            Data de Criação
-            {sortConfig.key === 'createdAt' && (
+            Data de Criação {sortConfig.key === 'createdAt' && (
               <span className="sort-indicator">
                 {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
               </span>
             )}
           </th>
           <th>Status</th>
+          <th>Responsável</th>
+          <th onClick={() => handleSort('riskLevel')} className="sortable">
+            Nível de Risco {sortConfig.key === 'riskLevel' && (
+              <span className="sort-indicator">
+                {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
+              </span>
+            )}
+          </th>
           <th>Ações</th>
         </tr>
       </thead>
@@ -776,6 +840,8 @@ const AdminContent = () => {
               <td>{getWasteTypeLabel(solicitacao.wasteType)}</td>
               <td>{formatDate(solicitacao.createdAt)}</td>
               <td>{getStatusBadge(solicitacao)}</td>
+              <td>{solicitacao.responsibleEntity || '-'}</td>
+              <td>{getRiskLevelBadge(solicitacao.riskLevel)}</td>
               <td className="actions-cell">
                 <button 
                   className="action-button view-button" 
@@ -820,7 +886,7 @@ const AdminContent = () => {
           ))
         ) : (
           <tr>
-            <td colSpan="5" className="no-content">
+            <td colSpan="7" className="no-content">
               Nenhuma solicitação encontrada com os filtros atuais
             </td>
           </tr>
@@ -856,6 +922,18 @@ const AdminContent = () => {
         <div className="detail-value">{selectedItem.quantity || 'Não especificada'}</div>
       </div>
       <div className="detail-row">
+        <div className="detail-label">Data de Criação:</div>
+        <div className="detail-value">{formatDate(selectedItem.createdAt)}</div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Status:</div>
+        <div className="detail-value">{getStatusBadge(selectedItem)}</div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Órgão Responsável:</div>
+        <div className="detail-value">{selectedItem.responsibleEntity || 'Não atribuído'}</div>
+      </div>
+      <div className="detail-row">
         <div className="detail-label">Localização:</div>
         <div className="detail-value">
           {selectedItem.location ? (
@@ -868,10 +946,41 @@ const AdminContent = () => {
           ) : 'Não informada'}
         </div>
       </div>
-      <div className="detail-row">
-        <div className="detail-label">Status:</div>
-        <div className="detail-value">{getStatusBadge(selectedItem)}</div>
+      <div className="detail-row risk-level-row">
+        <div className="detail-label">Nível de Risco:</div>
+        <div className="detail-value">
+          {getRiskLevelBadge(selectedItem.riskLevel)}
+          {selectedItem.riskLevel === 'CRITICAL' || selectedItem.riskLevel === 'RISCO_CRITICO' && (
+            <div className="risk-warning">
+              <FaExclamationTriangle /> Atenção: Esta ocorrência requer ação imediata!
+            </div>
+          )}
+        </div>
       </div>
+      {selectedItem.description && (
+        <div className="detail-row">
+          <div className="detail-label">Descrição:</div>
+          <div className="detail-value">{selectedItem.description}</div>
+        </div>
+      )}
+      {selectedItem.updatedAt && (
+        <div className="detail-row">
+          <div className="detail-label">Última atualização:</div>
+          <div className="detail-value">{formatDate(selectedItem.updatedAt)}</div>
+        </div>
+      )}
+      {selectedItem.deleted && (
+        <div className="deleted-info">
+          <div className="detail-row">
+            <div className="detail-label">Removido em:</div>
+            <div className="detail-value">{formatDate(selectedItem.deletedAt)}</div>
+          </div>
+          <div className="detail-row">
+            <div className="detail-label">Removido por:</div>
+            <div className="detail-value">{selectedItem.deletedBy || 'Sistema'}</div>
+          </div>
+        </div>
+      )}
     </>
   );
 
@@ -1029,6 +1138,21 @@ const AdminContent = () => {
               onChange={(e) => handleFilterChange('location', e.target.value)}
             />
           </div>
+
+          <div className="filter-section">
+            <label>Nível de Risco:</label>
+            <select
+              value={filterOptions.riskLevel}
+              onChange={(e) => handleFilterChange('riskLevel', e.target.value)}
+            >
+              <option value="all">Todos</option>
+              <option value="RISCO_CRITICO">Crítico</option>
+              <option value="RISCO_ALTO">Alto</option>
+              <option value="RISCO_MODERADO">Moderado</option>
+              <option value="LOW">Baixo</option>
+              <option value="nao-avaliado">Não Avaliado</option>
+            </select>
+          </div>
           
           <button className="reset-filters" onClick={resetFilters}>
             Limpar filtros
@@ -1080,18 +1204,26 @@ const AdminContent = () => {
                   </th>
                   <th>Localização</th>
                   <th>Status</th>
+                  <th onClick={() => handleSort('riskLevel')} className="sortable">
+                    Nível de Risco
+                    {sortConfig.key === 'riskLevel' && (
+                      <span className="sort-indicator">
+                        {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
+                      </span>
+                    )}
+                  </th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredContent.length > 0 ? (
                   filteredContent.map((denuncia) => (
-                    <tr key={denuncia.id} className={denuncia.deleted ? 'deleted-row' : ''}>
-                      <td>{denuncia.userName || 'Anônimo'}</td>
+                    <tr key={denuncia.id} className={`${denuncia.deleted ? 'deleted-row' : ''} ${denuncia.isAnonymous ? 'anonymous-row' : ''}`}>
+                      <td>{formatUserName(denuncia)}</td>
                       <td>{getWasteTypeLabel(denuncia.wasteType)}</td>
                       <td className="content-cell">
                         <div className="truncated-content">
-                        {denuncia.description?.slice(0, 70)}{denuncia.description?.length > 70 ? '...' : ''}
+                          {denuncia.description?.slice(0, 70)}{denuncia.description?.length > 70 ? '...' : ''}
                         </div>
                       </td>
                       <td>{formatDate(denuncia.createdAt)}</td>
@@ -1103,6 +1235,7 @@ const AdminContent = () => {
                         ) : 'Não informada'}
                       </td>
                       <td>{getStatusBadge(denuncia)}</td>
+                      <td>{getRiskLevelBadge(denuncia.riskLevel)}</td>
                       <td className="actions-cell">
                         <button 
                           className="action-button view-button" 
@@ -1149,7 +1282,7 @@ const AdminContent = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="no-content">
+                    <td colSpan="8" className="no-content">
                       Nenhuma denúncia encontrada com os filtros atuais
                     </td>
                   </tr>
@@ -1166,13 +1299,13 @@ const AdminContent = () => {
           <div className="modal-content view-modal">
             <div className="modal-header">
               <h2>
-                {selectedItem.contentType === 'solicitacao' ? 'Detalhes da Solicitação' : 'Detalhes da Denúncia'}
+                {selectedItem.contentType === 'collection_request' ? 'Detalhes da Solicitação' : 'Detalhes da Denúncia'}
               </h2>
               <button className="close-button" onClick={() => setViewModalOpen(false)}>×</button>
             </div>
             
             <div className="modal-body">
-              {selectedItem.contentType === 'solicitacao' ? (
+              {selectedItem.contentType === 'collection_request' ? (
                 renderViewModalContent()
               ) : (
                 <>
@@ -1209,9 +1342,20 @@ const AdminContent = () => {
                           <div className="coordinates">
                             Lat: {selectedItem.location.latitude}, Lng: {selectedItem.location.longitude}
                           </div>
-                          {/* Map could be added here */}
                         </>
                       ) : 'Não informada'}
+                    </div>
+                  </div>
+                  
+                  <div className="detail-row risk-level-row">
+                    <div className="detail-label">Nível de Risco:</div>
+                    <div className="detail-value">
+                      {getRiskLevelBadge(selectedItem.riskLevel)}
+                      {selectedItem.riskLevel === 'CRITICAL' || selectedItem.riskLevel === 'RISCO_CRITICO' && (
+                        <div className="risk-warning">
+                          <FaExclamationTriangle /> Atenção: Esta ocorrência requer ação imediata!
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -1283,7 +1427,7 @@ const AdminContent = () => {
                 onClick={() => {
                   setViewModalOpen(false);
                   setNewStatus(selectedItem.status || 
-                    (selectedItem.contentType === 'solicitacao' ? 'active' : 'pending'));
+                    (selectedItem.contentType === 'collection_request' ? 'active' : 'pending'));
                   setStatusModalOpen(true);
                 }}
               >
@@ -1309,11 +1453,11 @@ const AdminContent = () => {
               </div>
               
               <p>
-                Tem certeza que deseja remover {selectedItem.contentType === 'solicitacao' ? 'esta solicitação' : 'esta denúncia'}?
+                Tem certeza que deseja remover {selectedItem.contentType === 'collection_request' ? 'esta solicitação' : 'esta denúncia'}?
               </p>
               
               <p className="item-details">
-                <strong>{selectedItem.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} de:</strong> {selectedItem.userName || 'Anônimo'}<br />
+                <strong>{selectedItem.contentType === 'collection_request' ? 'Solicitação' : 'Denúncia'} de:</strong> {selectedItem.userName || 'Anônimo'}<br />
                 <strong>Criado em:</strong> {formatDate(selectedItem.createdAt)}
               </p>
               
@@ -1378,7 +1522,7 @@ const AdminContent = () => {
             
             <div className="modal-body">
               <p>
-                Alterar o status {selectedItem.contentType === 'solicitacao' ? 'da solicitação' : 'da denúncia'} de <strong>{selectedItem.userName || 'Anônimo'}</strong>:
+                Alterar o status {selectedItem.contentType === 'collection_request' ? 'da solicitação' : 'da denúncia'} de <strong>{selectedItem.userName || 'Anônimo'}</strong>:
               </p>
               
               <div className="status-form">

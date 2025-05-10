@@ -349,12 +349,14 @@
   
   /* Status Badge */
   .status-badge {
-    display: inline-block;
-    padding: 0.2em 0.5em;
-    border-radius: 4px;
-    font-size: 0.9em;
-    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
     text-transform: capitalize;
+    transition: all 0.2s ease;
   }
   
   .status-badge.active {
@@ -378,28 +380,28 @@
   }
   
   .status-badge.pending {
-    background-color: #f0ad4e;
-    color: white;
+    background-color: #fff3e0;
+    color: #f57c00;
   }
   
   .status-badge.in-progress {
-    background-color: #5bc0de;
-    color: white;
+    background-color: #e3f2fd;
+    color: #1976d2;
   }
   
   .status-badge.resolved {
-    background-color: #5cb85c;
-    color: white;
+    background-color: #e8f5e9;
+    color: #2e7d32;
   }
   
   .status-badge.rejected {
-    background-color: #d9534f;
-    color: white;
+    background-color: #ffebee;
+    color: #c62828;
   }
   
   .status-badge.deleted {
-    background-color: #6c757d;
-    color: white;
+    background-color: #f5f5f5;
+    color: #757575;
   }
   
   /* Action Buttons */
@@ -410,19 +412,15 @@
   }
   
   .action-button {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
   }
   
   .action-button:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .view-button {
@@ -457,32 +455,35 @@
     align-items: center;
     justify-content: center;
     z-index: 100;
+    backdrop-filter: blur(5px);
+    animation: modalFadeIn 0.2s ease-out;
   }
   
   .modal-content {
     background-color: white;
-    border-radius: 8px;
+    border-radius: 12px;
     max-width: 90%;
     width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
+    animation: modalSlideIn 0.3s ease-out;
   }
   
   .modal-header {
-    padding: 16px 20px;
+    padding: 20px 24px;
     border-bottom: 1px solid #e0e4eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
   }
   
   .modal-header h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+    font-size: 20px;
+    color: #1a73e8;
   }
   
   .close-button {
@@ -491,6 +492,17 @@
     font-size: 24px;
     color: #666;
     cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .close-button:hover {
+    background-color: #f1f3f4;
   }
   
   .modal-body {
@@ -515,16 +527,21 @@
   .detail-row {
     display: flex;
     margin-bottom: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f3f4;
   }
   
   .detail-label {
     width: 120px;
     font-weight: 500;
-    color: #666;
+    color: #5f6368;
+    font-size: 14px;
   }
   
   .detail-value {
     flex: 1;
+    font-size: 15px;
+    color: #202124;
   }
   
   .user-id {
@@ -585,10 +602,16 @@
   }
   
   .warning-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background-color: #ffebee;
+    color: #d32f2f;
     font-size: 48px;
-    color: #f44336;
-    text-align: center;
-    margin-bottom: 16px;
   }
   
   .item-details {
@@ -619,24 +642,43 @@
   }
   
   .status-form {
-    margin: 20px 0;
+    margin: 24px 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
   
-  .status-form select {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #e0e4eb;
+  .status-form label {
+    display: block;
+    margin-bottom: 8px;
     font-size: 14px;
+    color: #5f6368;
+  }
+  
+  .status-form select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #dadce0;
+    font-size: 14px;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .status-form select:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
   }
   
   .current-status {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 16px;
   }
   
   /* Footer Buttons */
@@ -653,13 +695,21 @@
   }
   
   .cancel-button {
-    background-color: #f5f7fa;
-    color: #333;
+    background-color: #f8f9fa;
+    color: #5f6368;
+  }
+  
+  .cancel-button:hover {
+    background-color: #f1f3f4;
   }
   
   .delete-button {
     background-color: #ffebee;
-    color: #c62828;
+    color: #d32f2f;
+  }
+  
+  .delete-button:hover {
+    background-color: #ffcdd2;
   }
   
   .permanent-delete-button {
@@ -706,6 +756,20 @@
     .actions-cell {
       flex-wrap: wrap;
     }
+    
+    .modal-content {
+      width: 95%;
+      margin: 10px;
+    }
+    
+    .modal-footer {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .modal-footer button {
+      width: 100%;
+    }
   }
   
   /* Mobile optimizations */
@@ -747,33 +811,34 @@
   
   /* Responsible Entity Form */
   .responsible-entity-form {
-    margin: 20px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    margin: 24px 0;
+    background-color: #f8f9fa;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e8eaed;
   }
   
   .responsible-entity-form label {
+    display: block;
+    margin-bottom: 8px;
     font-size: 14px;
-    font-weight: 500;
-    color: #333;
+    color: #5f6368;
   }
   
   .responsible-entity-form select {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #e0e4eb;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #dadce0;
     font-size: 14px;
+    color: #202124;
+    background-color: white;
+    transition: border-color 0.2s ease;
   }
   
-  /* Detail Row for Responsible Entity */
-  .detail-row .detail-label {
-    font-weight: 500;
-    color: #666;
-  }
-  
-  .detail-row .detail-value {
-    color: #444;
+  .responsible-entity-form select:focus {
+    border-color: #1a73e8;
+    outline: none;
   }
   
   /* Anonymous user styling */
@@ -825,4 +890,103 @@
 /* Modal styles for anonymous users */
 .modal-content .detail-row .anonymous-label {
   margin-right: 8px;
+}
+
+/* Estilos para os níveis de risco */
+.risk-level {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+  min-width: 100px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.risk-level.critico {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.risk-level.alto {
+  background-color: #fd7e14;
+  color: white;
+  border: 1px solid #fd7e14;
+}
+
+.risk-level.moderado {
+  background-color: #ffc107;
+  color: #000;
+  border: 1px solid #ffc107;
+}
+
+.risk-level.baixo {
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #28a745;
+}
+
+.risk-level.nao-avaliado {
+  background-color: #6c757d;
+  color: white;
+  border: 1px solid #6c757d;
+}
+
+/* Alerta para riscos críticos */
+.risk-warning {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: #fff3f3;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  color: #dc3545;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.risk-warning svg {
+  font-size: 1.2em;
+}
+
+/* Estilos para o modal */
+.risk-level-row {
+  margin-bottom: 16px;
+}
+
+.risk-level-row .detail-value {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Ajustes para a tabela */
+.content-table td .risk-level {
+  width: 100%;
+  min-width: 120px;
+}
+
+/* Animações */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
