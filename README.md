@@ -1,6 +1,6 @@
 <<<<<<< HEAD
-# EcoApp
-EcoApp
+# ColetAI
+ColetAI
 =======
 # React + Vite
 
