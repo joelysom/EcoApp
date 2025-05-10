@@ -81,6 +81,9 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
   const [showPGRCCInfo, setShowPGRCCInfo] = useState(false);
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [isAssessingRisk, setIsAssessingRisk] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   
   // Efeito para capturar localização atual do usuário ao abrir formulário
   useEffect(() => {
@@ -400,6 +403,113 @@ const handleSubmitForm = async (e) => {
     setShowPGRCCInfo(!showPGRCCInfo);
   };
 
+  // Função para verificar se o endereço está em Pernambuco
+  const isLocationInPernambuco = (address) => {
+    if (!address) return false;
+    
+    // Verificar estado
+    const isInPernambuco = address.state === 'Pernambuco' || 
+                          address.state === 'PE' || 
+                          address.display_name.includes('Pernambuco') ||
+                          address.display_name.includes(', PE,');
+
+    // Lista de cidades da região metropolitana do Recife
+    const rmrCities = [
+      'recife',
+      'olinda',
+      'jaboatao',
+      'jaboatão',
+      'cabo',
+      'cabo de santo agostinho',
+      'camaragibe',
+      'sao lourenco',
+      'são lourenço',
+      'paulista',
+      'igarassu',
+      'abreu e lima',
+      'moreno',
+      'ipojuca',
+      'aracoiaba',
+      'araçoiaba',
+      'ilha de itamaraca',
+      'ilha de itamaracá',
+      'itapissuma'
+    ];
+
+    // Verificar se está em alguma cidade da RMR
+    const cityName = (address.city || '').toLowerCase();
+    const isInRMR = rmrCities.some(city => 
+      cityName.includes(city) || 
+      address.display_name.toLowerCase().includes(city)
+    );
+
+    return isInPernambuco && isInRMR;
+  };
+
+  // Função para buscar sugestões de endereço
+  const searchAddressSuggestions = async (query) => {
+    if (!query || query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    try {
+      // Adicionar "Recife PE" à consulta para priorizar resultados locais
+      const searchQuery = `${query}, Recife PE`;
+      
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=10&addressdetails=1&countrycodes=br`,
+        {
+          headers: {
+            'Accept-Language': 'pt-BR',
+            'User-Agent': 'EcoApp/1.0'
+          }
+        }
+      );
+      
+      const data = await response.json();
+      
+      // Filtrar apenas resultados de Pernambuco/RMR
+      const filteredResults = data.filter(result => isLocationInPernambuco(result.address));
+      
+      // Limitar a 5 resultados após a filtragem
+      setAddressSuggestions(filteredResults.slice(0, 5));
+      setShowSuggestions(filteredResults.length > 0);
+    } catch (error) {
+      console.error('Erro ao buscar sugestões:', error);
+      setAddressSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // Função para lidar com a seleção de uma sugestão
+  const handleSuggestionSelect = (suggestion) => {
+    setReportData({
+      ...reportData,
+      location: {
+        address: suggestion.display_name,
+        latitude: parseFloat(suggestion.lat),
+        longitude: parseFloat(suggestion.lon)
+      }
+    });
+    setShowSuggestions(false);
+  };
+
+  // Função debounce para evitar muitas requisições
+  const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  };
+
+  // Versão com debounce da função de busca
+  const debouncedSearch = debounce(searchAddressSuggestions, 500);
+
   // Renderizar a etapa atual do formulário
   const renderStep = () => {
     switch(currentStep) {
@@ -717,18 +827,45 @@ const handleSubmitForm = async (e) => {
               </div>
             )}
             
-            <div className="form-group">
+            <div className="form-group address-group">
               <label htmlFor="address">Endereço:</label>
-              <input 
-                type="text"
-                id="address"
-                value={reportData.location.address}
-                onChange={(e) => setReportData({
-                  ...reportData, 
-                  location: {...reportData.location, address: e.target.value}
-                })}
-                placeholder="Ex: Rua exemplo, nº 123, Bairro"
-              />
+              <div className="address-input-container">
+                <input 
+                  type="text"
+                  id="address"
+                  value={reportData.location.address}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setReportData({
+                      ...reportData, 
+                      location: {...reportData.location, address: value}
+                    });
+                    debouncedSearch(value);
+                  }}
+                  onFocus={() => {
+                    if (reportData.location.address && addressSuggestions.length > 0) {
+                      setShowSuggestions(true);
+                    }
+                  }}
+                  placeholder="Ex: Rua exemplo, nº 123, Bairro"
+                  autoComplete="off"
+                />
+                {isLoadingSuggestions && (
+                  <div className="suggestions-loading">Buscando endereços...</div>
+                )}
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <ul className="address-suggestions">
+                    {addressSuggestions.map((suggestion, index) => (
+                      <li 
+                        key={index}
+                        onClick={() => handleSuggestionSelect(suggestion)}
+                      >
+                        {suggestion.display_name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
             
             <div className="form-group">
