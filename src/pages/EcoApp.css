@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-@import 'leaflet/dist/leaflet.css';
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import "leaflet/dist/leaflet.css";
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .app-container {
@@ -63,7 +63,7 @@
 }
 
 .nav-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -245,7 +245,13 @@
 .offer-image {
   height: 120px;
   background-color: #35c77e;
-  background-image: linear-gradient(45deg, #3aca7f 25%, #35c77e 25%, #35c77e 75%, #3aca7f 75%);
+  background-image: linear-gradient(
+    45deg,
+    #3aca7f 25%,
+    #35c77e 25%,
+    #35c77e 75%,
+    #3aca7f 75%
+  );
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
 }
@@ -283,7 +289,7 @@
   cursor: pointer;
 }
 
-/* Adicione este código ao final do seu arquivo EcoApp.css */
+/* Adicione este código ao final do seu arquivo ColetAI.css */
 
 .see-more-container {
   display: flex;
@@ -309,9 +315,8 @@
   background-color: #0e44a3;
 }
 
-
 /* EXTRAS */
-/* Add these styles to your existing EcoApp.css file */
+/* Add these styles to your existing ColetAI.css file */
 
 /* Loading Spinner */
 .loading-container {
@@ -334,7 +339,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Empty State */
@@ -924,7 +931,6 @@
   font-size: 12px;
   color: #666;
 }
-
 
 /* Estilos adicionais para a página de recompensas aprimorada */
 
