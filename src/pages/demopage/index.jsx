@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./demopage.css";
+import "./DemoPage.css";
 import { useAuth } from "../../auth/auth";
 
 const DemoPage = () => {
@@ -33,21 +33,19 @@ const DemoPage = () => {
           alt="ColetAI Logo"
           className="icon"
         />
-        <h1 className="title">Demonstração ColetaAi</h1>
+        <h1 className="title">ColetaAi</h1>
 
         <div className="section">
-          <button className="button" onClick={handleDemoAccess}>
-            Acessar Demo
+          <button className="button" onClick={handleFormDemo}>
+            Acessar (Demo)
           </button>
 
-          <button className="button secondaryButton" onClick={handleFormDemo}>
-            Demo Formulário
+          <button className="button secondaryButton" onClick={handleDemoAccess}>
+            Painel Administrativo (Demo)
           </button>
         </div>
 
-        <div className="infoText">
-          Explore as funcionalidades do ColetAI em modo demonstração
-        </div>
+        <div className="infoText">Explore as funcionalidades do ColetAI</div>
       </div>
     </div>
   );
