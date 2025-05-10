@@ -94,7 +94,7 @@ const Login = () => {
         </form>
 
         <div className="forgotPassword">
-          <Link to="/adminpoints">
+          <Link to="/demo">
             Esqueceu a senha?
           </Link>
         </div>

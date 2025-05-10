@@ -32,8 +32,53 @@ const CommunityPage = () => {
   
   // Carregar posts e denúncias ao montar o componente
   useEffect(() => {
-    fetchPosts();
-    fetchReports();
+    const fetchReportsAndRequests = async () => {
+      setLoading(true);
+      const db = getFirestore();
+
+      try {
+        // Fetch reports (denúncias)
+        const reportsQuery = query(
+          collection(db, "reports"),
+          where("deleted", "==", false),
+          orderBy("createdAt", "desc")
+        );
+        const reportsSnapshot = await getDocs(reportsQuery);
+        const reportsData = reportsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          serviceType: 'denunciar',
+          contentType: 'report',
+          createdAt: doc.data().createdAt ? doc.data().createdAt.toDate() : new Date()
+        }));
+
+        // Fetch collection requests (solicitações)
+        const requestsQuery = query(
+          collection(db, "collection_requests"),
+          where("deleted", "==", false),
+          orderBy("createdAt", "desc")
+        );
+        const requestsSnapshot = await getDocs(requestsQuery);
+        const requestsData = requestsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          serviceType: 'coletar',
+          contentType: 'collection_request',
+          createdAt: doc.data().createdAt ? doc.data().createdAt.toDate() : new Date()
+        }));
+
+        // Combine and set data
+        setReports(reportsData);
+        setRequests(requestsData);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+        ecoToastError("Não foi possível carregar os dados. Tente novamente mais tarde.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReportsAndRequests();
   }, []);
   
   // Função para buscar posts do Firestore

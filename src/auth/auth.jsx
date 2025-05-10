@@ -6,7 +6,8 @@ import {
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  signInAnonymously
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
@@ -162,6 +163,26 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Login as anonymous user
+  async function loginAsAnonymous() {
+    try {
+      const result = await signInAnonymously(auth);
+      const randomId = Math.random().toString(36).substring(2, 15);
+      const randomEmail = `${randomId}@demo.com`;
+
+      await updateProfile(result.user, {
+        displayName: 'Anônimo',
+        email: randomEmail
+      });
+
+      ecoToastSuccess('Você entrou como usuário anônimo!');
+      return result;
+    } catch (error) {
+      ecoToastError('Falha ao entrar como anônimo.');
+      throw error;
+    }
+  }
+
   // Logout user
   async function logout() {
     try {
@@ -231,6 +252,7 @@ export function AuthProvider({ children }) {
     logout,
     resetPassword,
     updateUserProfile,
+    loginAsAnonymous,
     ecoToastSuccess,
     ecoToastError
   };

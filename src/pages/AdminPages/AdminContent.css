@@ -65,12 +65,13 @@
   
   .tab-button {
     flex: 1;
-    padding: 12px;
-    background: none;
+    padding: 10px 20px;
+    margin: 5px;
     border: none;
-    font-size: 14px;
-    font-weight: 500;
+    background-color: #f0f0f0;
     cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -79,7 +80,7 @@
   }
   
   .tab-button.active {
-    background: linear-gradient(90deg, #1155cc 0%, #4a2f9f 100%);
+    background-color: #007bff;
     color: white;
   }
   
@@ -286,6 +287,7 @@
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
   }
   
   .content-table {
@@ -325,11 +327,7 @@
   }
   
   .deleted-row {
-    background-color: #fff5f5;
-  }
-  
-  .deleted-row:hover {
-    background-color: #ffe5e5;
+    background-color: #ffe6e6;
   }
   
   .content-cell {
@@ -352,11 +350,11 @@
   /* Status Badge */
   .status-badge {
     display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
+    padding: 0.2em 0.5em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-transform: capitalize;
   }
   
   .status-badge.active {
@@ -380,28 +378,28 @@
   }
   
   .status-badge.pending {
-    background-color: #fff8e1;
-    color: #ff8f00;
+    background-color: #f0ad4e;
+    color: white;
   }
   
   .status-badge.in-progress {
-    background-color: #e3f2fd;
-    color: #0277bd;
+    background-color: #5bc0de;
+    color: white;
   }
   
   .status-badge.resolved {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: #5cb85c;
+    color: white;
   }
   
   .status-badge.rejected {
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: #d9534f;
+    color: white;
   }
   
   .status-badge.deleted {
-    background-color: #fce8e6;
-    color: #c5221f;
+    background-color: #6c757d;
+    color: white;
   }
   
   /* Action Buttons */
@@ -777,3 +775,54 @@
   .detail-row .detail-value {
     color: #444;
   }
+  
+  /* Anonymous user styling */
+.anonymous-label {
+  display: inline-block;
+  color: #666;
+  font-style: italic;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  font-size: 0.9em;
+  margin-bottom: 4px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-id {
+  font-size: 0.8em;
+  color: #666;
+  font-family: monospace;
+  background-color: #f8f8f8;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.anonymous-info {
+  margin-top: 8px;
+  color: #666;
+  font-size: 0.9em;
+  padding: 8px;
+  background-color: #fff8e1;
+  border-radius: 4px;
+  border: 1px solid #ffe082;
+}
+
+.anonymous-row {
+  background-color: #fafafa;
+}
+
+.anonymous-row:hover {
+  background-color: #f5f5f5;
+}
+
+/* Modal styles for anonymous users */
+.modal-content .detail-row .anonymous-label {
+  margin-right: 8px;
+}

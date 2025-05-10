@@ -9,7 +9,7 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
   const storage = getStorage();
   
   // Estados para controlar o fluxo do formulário
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(currentUser?.isAnonymous ? 2 : 1);
   const [userData, setUserData] = useState({
     fullName: currentUser?.displayName || '',
     document: '',
@@ -39,7 +39,7 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
   
   // Efeito para capturar localização atual do usuário ao abrir formulário
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (!currentUser?.isAnonymous && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setReportData(prev => ({
@@ -176,30 +176,30 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
 // Updated handleSubmitForm function with proper variable scoping
 const handleSubmitForm = async (e) => {
   e.preventDefault();
-  
+
   if (!currentUser) {
     ecoToastError("Você precisa estar logado para fazer uma denúncia ou solicitar uma coleta");
     return;
   }
-  
+
   // Validate the form data before submitting
   if (!validateStep(6)) {
     ecoToastError("Por favor, verifique se todos os campos obrigatórios estão preenchidos");
     return;
   }
-  
+
   setIsSubmittingReport(true);
-  
+
   try {
     let imageUrl = null;
-    
+
     // Upload da imagem, se houver
     if (reportImage) {
       const storageRef = ref(storage, `reports/${currentUser.uid}_${Date.now()}`);
       const uploadResult = await uploadBytes(storageRef, reportImage);
       imageUrl = await getDownloadURL(uploadResult.ref);
     }
-    
+
     // Mapear tipo de resíduo para compatibilidade com o formato antigo
     const wasteTypeMapping = {
       'organic': 'organic',
@@ -208,17 +208,14 @@ const handleSubmitForm = async (e) => {
       'construction': 'construction',
       'other': 'other'
     };
-    
-    // Criar nova denúncia no Firestore
+
+    // Criar nova denúncia ou solicitação no Firestore
     const reportDoc = {
-      // Dados do usuário
       userId: currentUser.uid,
       userName: userData.fullName || currentUser.displayName || "Usuário anônimo",
       userDocument: userData.document,
       userContact: userData.contact,
       userPhotoURL: currentUser.photoURL || null,
-      
-      // Dados da denúncia/coleta
       serviceType: serviceType,
       description: reportData.description,
       wasteType: wasteTypeMapping[reportData.wasteType] || reportData.wasteType,
@@ -228,24 +225,19 @@ const handleSubmitForm = async (e) => {
       quantity: reportData.quantity,
       frequency: reportData.frequency,
       hasPGRCC: reportData.hasPGRCC,
-      
-      // Localização
       location: reportData.location,
-      
-      // Imagem
       imageUrl,
-      
-      // Metadados
       status: "pending",
       deleted: false,
-      contentType: serviceType === 'denunciar' ? 'report' : 'collection_request', // Tipo de conteúdo para compatibilidade com o painel admin
+      contentType: serviceType === 'denunciar' ? 'report' : 'collection_request',
       createdAt: serverTimestamp()
     };
-    
-    const collectionRef = collection(db, "reports");
+
+    const collectionName = serviceType === 'denunciar' ? "reports" : "collection_requests";
+    const collectionRef = collection(db, collectionName);
     const docRef = await addDoc(collectionRef, reportDoc);
-    console.log(`${serviceType === 'denunciar' ? 'Denúncia' : 'Coleta'} criada com ID:`, docRef.id);
-    
+    console.log(`${serviceType === 'denunciar' ? 'Denúncia' : 'Solicitação'} criada com ID:`, docRef.id);
+
     // Limpar o formulário
     setUserData({
       fullName: currentUser?.displayName || '',
@@ -270,7 +262,7 @@ const handleSubmitForm = async (e) => {
     });
     setReportImage(null);
     setReportImagePreview(null);
-    
+
     ecoToastSuccess(serviceType === 'denunciar' 
       ? "Denúncia enviada com sucesso! Obrigado pela sua contribuição!" 
       : "Solicitação de coleta enviada com sucesso! Acompanhe o status pelo seu perfil."
@@ -361,7 +353,9 @@ const handleSubmitForm = async (e) => {
               
               <div 
                 className={`service-option ${serviceType === 'coletar' ? 'selected' : ''}`}
-                onClick={() => setServiceType('coletar')}
+                onClick={() => {
+                  setServiceType('coletar'); // Correctly set serviceType to 'coletar'
+                }}
               >
                 <FaTrash size={24} />
                 <p>Solicitar coleta de resíduos</p>
@@ -769,14 +763,16 @@ const handleSubmitForm = async (e) => {
         
         <div className="modal-body">
           <div className="steps-indicator">
-            {[1, 2, 3, 4, 5, 6].map(step => (
-              <div 
-                key={step} 
-                className={`step-indicator ${currentStep === step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
-              >
-                {currentStep > step ? <FaCheck /> : step}
-              </div>
-            ))}
+            {[1, 2, 3, 4, 5, 6]
+              .filter(step => !(currentUser?.isAnonymous && step === 1)) // Skip step 1 for anonymous
+              .map(step => (
+                <div 
+                  key={step} 
+                  className={`step-indicator ${currentStep === step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
+                >
+                  {currentStep > step ? <FaCheck /> : currentUser?.isAnonymous ? step - 1 : step}
+                </div>
+              ))}
           </div>
           
           <form onSubmit={handleSubmitForm}>

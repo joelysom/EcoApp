@@ -12,6 +12,8 @@ import Profile from '../pages/ProfilePage';
 import AdminPoints from '../pages/AdminPages';
 import Comunidade from '../pages/ComunityPage';
 import AdminContent from '../pages/AdminPages/AdminContent.jsx';
+import DemoPage from '../pages/demopage';
+import FullFormPage from '../pages/FullFormPage';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -28,7 +30,7 @@ const ProtectedRoute = ({ children }) => {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Login />
+    element: <DemoPage />
   },
   {
     path: "/cadastro",
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
       {
         path: "/comunidade",
         element: <Comunidade />
+      },
+      {
+        path: "/demo",
+        element: <DemoPage />
+      },
+      {
+        path: "/fullform",
+        element: <FullFormPage />
       }
     ]
   }

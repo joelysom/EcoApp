@@ -49,9 +49,18 @@ const AdminContent = () => {
   const SECRET_ACCESS_KEY = 'ecoadmin123';
 
   useEffect(() => {
-    // Check if user is logged in
     if (!currentUser) {
       navigate('/login');
+      return;
+    }
+
+    if (currentUser.isAnonymous) {
+      // Allow anonymous users to access the page
+      setCurrentUserData({
+        userName: 'Anônimo',
+        email: currentUser.email || 'anonimo@demo.com',
+        isAnonymous: true
+      });
       return;
     }
 
@@ -60,44 +69,36 @@ const AdminContent = () => {
       try {
         const db = getFirestore();
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setCurrentUserData(userData);
-          
-          // If user doesn't have admin permission (level 4)
+
           if (userData.nivelPermissao !== 4) {
-            // Ask for admin access code
             const accessCode = prompt('Digite o código de acesso para administração:');
-            
+
             if (accessCode === SECRET_ACCESS_KEY) {
-              // Grant admin permission if correct code is entered
               await updateDoc(doc(db, "users", currentUser.uid), {
                 nivelPermissao: 4
               });
               ecoToastSuccess("Acesso de administrador concedido!");
-              // Update local state
               setCurrentUserData({
                 ...userData,
                 nivelPermissao: 4
               });
             } else {
-              // Redirect if wrong code
               ecoToastError('Acesso não autorizado');
               navigate('/');
-              return;
             }
           }
         } else {
           ecoToastError("Perfil de usuário não encontrado");
           navigate('/');
-          return;
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
         ecoToastError("Erro ao verificar permissões");
         navigate('/');
-        return;
       }
     };
 
@@ -116,12 +117,12 @@ const AdminContent = () => {
       let solicitacoesQuery;
       if (showDeletedContent) {
         solicitacoesQuery = query(
-          collection(db, "community_posts"),
+          collection(db, "collection_requests"),
           orderBy("createdAt", "desc")
         );
       } else {
         solicitacoesQuery = query(
-          collection(db, "community_posts"),
+          collection(db, "collection_requests"),
           where("deleted", "!=", true),
           orderBy("deleted", "asc"),
           orderBy("createdAt", "desc")
@@ -138,13 +139,13 @@ const AdminContent = () => {
           createdAt: docSnapshot.data().createdAt ? 
                     docSnapshot.data().createdAt.toDate() : 
                     new Date(),
-          contentType: 'solicitacao',
+          contentType: 'collection_request', // Corrigido para match com o tipo correto
           comments: []
         };
         
         // Fetch comments count
         const commentsQuery = query(
-          collection(db, "community_posts", docSnapshot.id, "comments")
+          collection(db, "collection_requests", docSnapshot.id, "comments")
         );
         
         const commentsSnapshot = await getDocs(commentsQuery);
@@ -208,22 +209,52 @@ const AdminContent = () => {
     setViewModalOpen(true);
   };
 
+  // Helper function to check if document exists
+  const checkDocumentExists = async (db, collectionName, documentId) => {
+    try {
+      const docRef = doc(db, collectionName, documentId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists();
+    } catch (error) {
+      console.error("Error checking document:", error);
+      return false;
+    }
+  };
+
   // Handle delete confirmation
   const handleDeleteConfirm = async () => {
     if (!selectedItem) return;
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
+      const collectionName = selectedItem.contentType === 'collection_request' ? "collection_requests" : "reports";
       
-      // Soft delete - mark as deleted instead of actually removing
+      // Check if document exists before updating
+      const exists = await checkDocumentExists(db, collectionName, selectedItem.id);
+      if (!exists) {
+        ecoToastError("Este documento não existe mais no banco de dados");
+        setDeleteModalOpen(false);
+        
+        // Remove from local state
+        if (selectedItem.contentType === 'collection_request') {
+          setSolicitacoes(prev => prev.filter(item => item.id !== selectedItem.id));
+        } else {
+          setDenuncias(prev => prev.filter(item => item.id !== selectedItem.id));
+        }
+        return;
+      }
+
+      const itemRef = doc(db, collectionName, selectedItem.id);
+      
+      // Soft delete with retry mechanism
       await updateDoc(itemRef, {
         deleted: true,
         deletedBy: currentUser.uid,
         deletedAt: new Date()
       });
       
-      if (selectedItem.contentType === 'solicitacao') {
+      // Update local state
+      if (selectedItem.contentType === 'collection_request') {
         setSolicitacoes(prevSolicitacoes => 
           prevSolicitacoes.map(solicitacao => 
             solicitacao.id === selectedItem.id 
@@ -241,11 +272,11 @@ const AdminContent = () => {
         );
       }
       
-      ecoToastSuccess(`${selectedItem.contentType === 'solicitacao' ? 'Solicitação' : 'Denúncia'} removida com sucesso`);
+      ecoToastSuccess(`${selectedItem.contentType === 'collection_request' ? 'Solicitação' : 'Denúncia'} removida com sucesso`);
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("Error deleting item:", error);
-      ecoToastError(`Erro ao remover ${selectedItem.contentType === 'solicitacao' ? 'solicitação' : 'denúncia'}`);
+      ecoToastError(`Erro ao remover ${selectedItem.contentType === 'collection_request' ? 'solicitação' : 'denúncia'}`);
     }
   };
 
@@ -259,7 +290,7 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports", selectedItem.id);
       
       // Permanently delete
       await deleteDoc(itemRef);
@@ -284,7 +315,7 @@ const AdminContent = () => {
     
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports", selectedItem.id);
       
       await updateDoc(itemRef, {
         status: newStatus,
@@ -318,11 +349,63 @@ const AdminContent = () => {
     }
   };
 
+  // Handle assign and change status
+  const handleAssignAndChangeStatus = async (responsibleEntity) => {
+    if (!selectedItem) return;
+
+    try {
+      const db = getFirestore();
+      const collectionName = selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports";
+      
+      // Check if document exists before updating
+      const exists = await checkDocumentExists(db, collectionName, selectedItem.id);
+      if (!exists) {
+        ecoToastError("Este documento não existe mais no banco de dados");
+        setStatusModalOpen(false);
+        return;
+      }
+
+      const itemRef = doc(db, collectionName, selectedItem.id);
+
+      // Update with retry mechanism
+      await updateDoc(itemRef, {
+        responsibleEntity,
+        status: "in_progress",
+        updatedAt: new Date(),
+        updatedBy: currentUser.uid
+      });
+
+      // Update local state
+      const updateItem = (item) => ({
+        ...item,
+        responsibleEntity,
+        status: "in_progress",
+        updatedAt: new Date()
+      });
+
+      if (selectedItem.contentType === 'solicitacao') {
+        setSolicitacoes(prev => prev.map(item => 
+          item.id === selectedItem.id ? updateItem(item) : item
+        ));
+      } else {
+        setDenuncias(prev => prev.map(item => 
+          item.id === selectedItem.id ? updateItem(item) : item
+        ));
+      }
+
+      ecoToastSuccess(`Responsável atribuído: ${responsibleEntity}`);
+      setStatusModalOpen(false);
+    } catch (error) {
+      console.error("Erro ao atribuir responsável e alterar status:", error);
+      ecoToastError("Erro ao atribuir responsável e alterar status");
+    }
+  };
+
   // Handle restore deleted item
   const handleRestoreItem = async (item) => {
     try {
       const db = getFirestore();
-      const itemRef = doc(db, item.contentType === 'solicitacao' ? "community_posts" : "reports", item.id);
+      const itemRef = doc(db, item.contentType === 'solicitacao' ? "collection_requests" : "reports", item.id);
       
       await updateDoc(itemRef, {
         deleted: false,
@@ -479,7 +562,7 @@ const AdminContent = () => {
     return types[wasteType] || 'Não especificado';
   };
 
-  // Get status badge
+  // Atualizar os rótulos de status para exibir em português
   const getStatusBadge = (item) => {
     if (item.deleted) {
       return <span className="status-badge deleted">Removido</span>;
@@ -492,7 +575,7 @@ const AdminContent = () => {
         case 'in_progress':
           return <span className="status-badge in-progress">Em andamento</span>;
         case 'resolved':
-          return <span className="status-badge resolved">Resolvido</span>;
+          return <span className="status-badge resolved">Finalizado</span>;
         case 'rejected':
           return <span className="status-badge rejected">Rejeitado</span>;
         default:
@@ -501,8 +584,32 @@ const AdminContent = () => {
     }
     
     return item.status ? 
-      <span className={`status-badge ${item.status}`}>{item.status}</span> : 
+      <span className={`status-badge ${item.status}`}>{
+        item.status === 'pending' ? 'Pendente' :
+        item.status === 'in_progress' ? 'Em andamento' :
+        item.status === 'resolved' ? 'Finalizado' :
+        item.status === 'rejected' ? 'Rejeitado' :
+        item.status
+      }</span> : 
       <span className="status-badge active">Ativo</span>;
+  };
+
+  // Função para formatar nome de usuário
+  const formatUserName = (item) => {
+    if (item.isAnonymous || !item.userName) {
+      return (
+        <span className="user-info">
+          <span className="anonymous-label">Usuário Anônimo</span>
+          {item.userId && <span className="user-id">ID: {item.userId.slice(0, 8)}...</span>}
+        </span>
+      );
+    }
+    return (
+      <span className="user-info">
+        <span className="user-name">{item.userName}</span>
+        {item.userId && <span className="user-id">ID: {item.userId.slice(0, 8)}...</span>}
+      </span>
+    );
   };
 
   // Apply search, filters and sorting
@@ -558,7 +665,7 @@ const AdminContent = () => {
 
     try {
       const db = getFirestore();
-      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "community_posts" : "reports", selectedItem.id);
+      const itemRef = doc(db, selectedItem.contentType === 'solicitacao' ? "collection_requests" : "reports", selectedItem.id);
 
       await updateDoc(itemRef, {
         responsibleEntity,
@@ -593,6 +700,181 @@ const AdminContent = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const db = getFirestore();
+
+      try {
+        // Fetching collection requests
+        const collectionRequestsQuery = query(
+          collection(db, "collection_requests"),
+          where("deleted", "==", false),
+          orderBy("createdAt", "desc")
+        );
+        const collectionRequestsSnapshot = await getDocs(collectionRequestsQuery);
+        const collectionRequestsData = collectionRequestsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setSolicitacoes(collectionRequestsData);
+
+        // Fetching reports
+        const reportsQuery = query(
+          collection(db, "reports"),
+          where("deleted", "==", false),
+          orderBy("createdAt", "desc")
+        );
+        const reportsSnapshot = await getDocs(reportsQuery);
+        const reportsData = reportsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setDenuncias(reportsData);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+        ecoToastError("Não foi possível carregar os dados. Tente novamente mais tarde.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Atualizar a tabela de "Solicitações de Descartes"
+  const renderSolicitacoesTable = () => (
+    <table className="content-table">
+      <thead>
+        <tr>
+          <th onClick={() => handleSort('userName')} className="sortable">
+            Autor
+            {sortConfig.key === 'userName' && (
+              <span className="sort-indicator">
+                {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
+              </span>
+            )}
+          </th>
+          <th>Tipo de Resíduo</th>
+          <th onClick={() => handleSort('createdAt')} className="sortable">
+            Data de Criação
+            {sortConfig.key === 'createdAt' && (
+              <span className="sort-indicator">
+                {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
+              </span>
+            )}
+          </th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredContent.length > 0 ? (
+          filteredContent.map((solicitacao) => (
+            <tr key={solicitacao.id} className={`${solicitacao.deleted ? 'deleted-row' : ''} ${solicitacao.isAnonymous ? 'anonymous-row' : ''}`}>
+              <td>{formatUserName(solicitacao)}</td>
+              <td>{getWasteTypeLabel(solicitacao.wasteType)}</td>
+              <td>{formatDate(solicitacao.createdAt)}</td>
+              <td>{getStatusBadge(solicitacao)}</td>
+              <td className="actions-cell">
+                <button 
+                  className="action-button view-button" 
+                  title="Ver detalhes"
+                  onClick={() => handleViewItem(solicitacao)}
+                >
+                  <FaEye />
+                </button>
+                {!solicitacao.deleted ? (
+                  <button 
+                    className="action-button delete-button" 
+                    title="Remover"
+                    onClick={() => {
+                      setSelectedItem(solicitacao);
+                      setDeleteModalOpen(true);
+                    }}
+                  >
+                    <FaTrash />
+                  </button>
+                ) : (
+                  <button 
+                    className="action-button restore-button" 
+                    title="Restaurar"
+                    onClick={() => handleRestoreItem(solicitacao)}
+                  >
+                    <FaCheck />
+                  </button>
+                )}
+                <button 
+                  className="action-button status-button" 
+                  title="Mudar status"
+                  onClick={() => {
+                    setSelectedItem(solicitacao);
+                    setNewStatus(solicitacao.status || 'active');
+                    setStatusModalOpen(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="5" className="no-content">
+              Nenhuma solicitação encontrada com os filtros atuais
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+
+  // Atualizar o modal de visualização para exibir detalhes completos da solicitação
+  const renderViewModalContent = () => (
+    <>
+      <div className="detail-row">
+        <div className="detail-label">ID:</div>
+        <div className="detail-value">{selectedItem.id}</div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Autor:</div>
+        <div className="detail-value">
+          {formatUserName(selectedItem)}
+          {selectedItem.isAnonymous && (
+            <div className="anonymous-info">
+              <em>Este registro foi feito através do modo de demonstração</em>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Tipo de Resíduo:</div>
+        <div className="detail-value">{getWasteTypeLabel(selectedItem.wasteType)}</div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Quantidade:</div>
+        <div className="detail-value">{selectedItem.quantity || 'Não especificada'}</div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Localização:</div>
+        <div className="detail-value">
+          {selectedItem.location ? (
+            <>
+              <div>{selectedItem.location.address || 'Endereço não fornecido'}</div>
+              <div className="coordinates">
+                Lat: {selectedItem.location.latitude}, Lng: {selectedItem.location.longitude}
+              </div>
+            </>
+          ) : 'Não informada'}
+        </div>
+      </div>
+      <div className="detail-row">
+        <div className="detail-label">Status:</div>
+        <div className="detail-value">{getStatusBadge(selectedItem)}</div>
+      </div>
+    </>
+  );
+
   return (
     <div className="admin-container">
       <div className="admin-header">
@@ -605,9 +887,15 @@ const AdminContent = () => {
           }}>
             Atualizar
           </button>
-          <button className="back-button" onClick={() => navigate('/adminpoints')}>
-            Voltar para Admin
-          </button>
+          {currentUser?.isAnonymous ? (
+            <button className="back-button" onClick={() => navigate('/demo')}>
+              Voltar à Demo
+            </button>
+          ) : (
+            <button className="back-button" onClick={() => navigate('/adminpoints')}>
+              Voltar para Admin
+            </button>
+          )}
         </div>
       </div>
       
@@ -760,113 +1048,7 @@ const AdminContent = () => {
       ) : (
         <div className="content-table-container">
           {contentType === 'solicitacoes' ? (
-            <table className="content-table">
-              <thead>
-                <tr>
-                  <th onClick={() => handleSort('userName')} className="sortable">
-                    Autor
-                    {sortConfig.key === 'userName' && (
-                      <span className="sort-indicator">
-                        {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
-                      </span>
-                    )}
-                  </th>
-                  <th>Conteúdo</th>
-                  <th onClick={() => handleSort('createdAt')} className="sortable">
-                    Data
-                    {sortConfig.key === 'createdAt' && (
-                      <span className="sort-indicator">
-                        {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
-                      </span>
-                    )}
-                  </th>
-                  <th onClick={() => handleSort('likes')} className="sortable">
-                    Curtidas
-                    {sortConfig.key === 'likes' && (
-                      <span className="sort-indicator">
-                        {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
-                      </span>
-                    )}
-                  </th>
-                  <th onClick={() => handleSort('commentsCount')} className="sortable">
-                    Comentários
-                    {sortConfig.key === 'commentsCount' && (
-                      <span className="sort-indicator">
-                        {sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}
-                      </span>
-                    )}
-                  </th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredContent.length > 0 ? (
-                  filteredContent.map((solicitacao) => (
-                    <tr key={solicitacao.id} className={solicitacao.deleted ? 'deleted-row' : ''}>
-                      <td>{solicitacao.userName || 'Anônimo'}</td>
-                      <td className="content-cell">
-                        <div className="truncated-content">
-                          {solicitacao.content?.slice(0, 70)}{solicitacao.content?.length > 70 ? '...' : ''}
-                        </div>
-                      </td>
-                      <td>{formatDate(solicitacao.createdAt)}</td>
-                      <td>{solicitacao.likes || 0}</td>
-                      <td>{solicitacao.commentsCount || 0}</td>
-                      <td>{getStatusBadge(solicitacao)}</td>
-                      <td className="actions-cell">
-                        <button 
-                          className="action-button view-button" 
-                          title="Ver detalhes"
-                          onClick={() => handleViewItem(solicitacao)}
-                        >
-                          <FaEye />
-                        </button>
-                        
-                        {!solicitacao.deleted ? (
-                          <button 
-                            className="action-button delete-button" 
-                            title="Remover"
-                            onClick={() => {
-                              setSelectedItem(solicitacao);
-                              setDeleteModalOpen(true);
-                            }}
-                          >
-                            <FaTrash />
-                          </button>
-                        ) : (
-                          <button 
-                            className="action-button restore-button" 
-                            title="Restaurar"
-                            onClick={() => handleRestoreItem(solicitacao)}
-                          >
-                            <FaCheck />
-                          </button>
-                        )}
-                        
-                        <button 
-                          className="action-button status-button" 
-                          title="Mudar status"
-                          onClick={() => {
-                            setSelectedItem(solicitacao);
-                            setNewStatus(solicitacao.status || 'active');
-                            setStatusModalOpen(true);
-                          }}
-                        >
-                          <FaEdit />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="no-content">
-                      Nenhuma solicitação encontrada com os filtros atuais
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            renderSolicitacoesTable()
           ) : (
             <table className="content-table">
               <thead>
@@ -991,49 +1173,7 @@ const AdminContent = () => {
             
             <div className="modal-body">
               {selectedItem.contentType === 'solicitacao' ? (
-                <>
-                  <div className="detail-row">
-                    <div className="detail-label">ID:</div>
-                    <div className="detail-value">{selectedItem.id}</div>
-                  </div>
-                  <div className="detail-row">
-                    <div className="detail-label">Autor:</div>
-                    <div className="detail-value">
-                      {selectedItem.userName || 'Anônimo'} 
-                      {selectedItem.userId && <span className="user-id">({selectedItem.userId})</span>}
-                    </div>
-                  </div>
-                  <div className="detail-row">
-                    <div className="detail-label">Criado em:</div>
-                    <div className="detail-value">{formatDate(selectedItem.createdAt)}</div>
-                  </div>
-                  <div className="detail-row">
-                    <div className="detail-label">Status:</div>
-                    <div className="detail-value">{getStatusBadge(selectedItem)}</div>
-                  </div>
-                  <div className="detail-row">
-                    <div className="detail-label">Curtidas:</div>
-                    <div className="detail-value">{selectedItem.likes || 0}</div>
-                  </div>
-                  <div className="detail-row">
-                    <div className="detail-label">Comentários:</div>
-                    <div className="detail-value">{selectedItem.commentsCount || 0}</div>
-                  </div>
-                  
-                  <div className="detail-content">
-                    <h3>Conteúdo da Solicitação</h3>
-                    <div className="content-text">
-                      {selectedItem.content || 'Sem conteúdo de texto'}
-                    </div>
-                    
-                    {selectedItem.imageUrl && (
-                      <div className="content-image">
-                        <h4>Imagem anexada</h4>
-                        <img src={selectedItem.imageUrl} alt="Conteúdo da solicitação" />
-                      </div>
-                    )}
-                  </div>
-                </>
+                renderViewModalContent()
               ) : (
                 <>
                   <div className="detail-row">
@@ -1243,48 +1383,32 @@ const AdminContent = () => {
               
               <div className="status-form">
                 <label htmlFor="status-select">Novo status:</label>
-                
-                {selectedItem.contentType === 'solicitacao' ? (
-                  <select 
-                    id="status-select"
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                  >
-                    <option value="active">Ativo</option>
-                    <option value="featured">Destacado</option>
-                    <option value="restricted">Restrito</option>
-                    <option value="archived">Arquivado</option>
-                  </select>
-                ) : (
-                  <select 
-                    id="status-select"
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                  >
-                    <option value="pending">Pendente</option>
-                    <option value="in_progress">Em andamento</option>
-                    <option value="resolved">Resolvido</option>
-                    <option value="rejected">Rejeitado</option>
-                  </select>
-                )}
+                <select 
+                  id="status-select"
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                >
+                  <option value="pending">Pendente</option>
+                  <option value="in_progress">Em andamento</option>
+                  <option value="resolved">Finalizado</option>
+                  <option value="rejected">Rejeitado</option>
+                </select>
               </div>
-              
-              {selectedItem.contentType === 'report' && (
-                <div className="responsible-entity-form">
-                  <label htmlFor="responsible-entity-select">Responsável pela coleta:</label>
-                  <select 
-                    id="responsible-entity-select"
-                    value={responsibleEntity}
-                    onChange={(e) => setResponsibleEntity(e.target.value)}
-                  >
-                    <option value="">Selecione</option>
-                    <option value="EMLURB">EMLURB</option>
-                    <option value="Catadores">Catadores</option>
-                    <option value="ONG ou Instituição de Reciclagem">ONG ou Instituição de Reciclagem</option>
-                  </select>
-                </div>
-              )}
-              
+
+              <div className="responsible-entity-form">
+                <label htmlFor="responsible-entity-select">Atribuir responsável:</label>
+                <select 
+                  id="responsible-entity-select"
+                  value={responsibleEntity}
+                  onChange={(e) => setResponsibleEntity(e.target.value)}
+                >
+                  <option value="">Selecione</option>
+                  <option value="EMLURB">EMLURB</option>
+                  <option value="Catadores">Catadores</option>
+                  <option value="ONG ou Instituição de Reciclagem">ONG ou Instituição de Reciclagem</option>
+                </select>
+              </div>
+
               <div className="current-status">
                 <span>Status atual: </span> 
                 {getStatusBadge(selectedItem)}
@@ -1293,10 +1417,10 @@ const AdminContent = () => {
             
             <div className="modal-footer">
               <button className="cancel-button" onClick={() => setStatusModalOpen(false)}>Cancelar</button>
-              {selectedItem.contentType === 'report' && responsibleEntity ? (
+              {responsibleEntity ? (
                 <button 
                   className="update-button"
-                  onClick={handleResponsibleEntityAssignment}
+                  onClick={() => handleAssignAndChangeStatus(responsibleEntity)}
                 >
                   <FaCheck /> Atribuir Responsável e Atualizar Status
                 </button>

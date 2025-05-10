@@ -1,0 +1,15 @@
+/* FullForm.module.css */
+
+.fullFormPage {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9; /* Optional: Set a background color */
+}
+
+/* Copy other styles from FullForm.css and convert them to camelCase class names */

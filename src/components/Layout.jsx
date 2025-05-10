@@ -7,7 +7,7 @@ import ScrollToTop from './ScrollToTop';
 
 const Layout = () => {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/cadastro' || location.pathname === '/profile'; // Agora verifica os dois
+  const isAuthPage = ['/login', '/cadastro', '/profile', '/demo', '/fullform'].includes(location.pathname);
 
   return (
     <div className="app-container">

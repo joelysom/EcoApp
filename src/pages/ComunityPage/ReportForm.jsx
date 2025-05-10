@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { FaExclamationTriangle, FaCamera, FaTrash, FaArrowLeft, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '../../auth/auth';
 import './ReportForm.css';
 
 const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ecoToastSuccess }) => {
+  const { loginAsAnonymous } = useAuth();
   const db = getFirestore();
   const storage = getStorage();
   
@@ -57,6 +59,34 @@ const ReportForm = ({ currentUser, onClose, onReportSubmitted, ecoToastError, ec
       );
     }
   }, []);
+
+  // Autenticar como usuário anônimo se não houver usuário atual
+  useEffect(() => {
+    if (!currentUser) {
+      (async () => {
+        try {
+          const anonymousUser = await loginAsAnonymous();
+          setUserData((prev) => ({
+            ...prev,
+            fullName: anonymousUser.user.displayName || `Usuário Anônimo`,
+            contact: anonymousUser.user.email || `anonimo@demo.com`,
+          }));
+        } catch (error) {
+          console.error('Erro ao autenticar como anônimo:', error);
+          ecoToastError('Não foi possível autenticar como usuário anônimo.');
+        }
+      })();
+    }
+  }, [currentUser, loginAsAnonymous, ecoToastError]);
+
+  // Pular etapa de cadastro se usuário for anônimo
+  useEffect(() => {
+    if (currentUser?.isAnonymous) {
+      setTimeout(() => {
+        setCurrentStep(2); // Pular para a etapa 2
+      }, 1000); // Adicionar um atraso para o efeito de animação
+    }
+  }, [currentUser]);
 
   // Função para validar cada etapa
   const validateStep = (step) => {
@@ -300,6 +330,16 @@ const handleSubmitForm = async (e) => {
 
   // Renderizar a etapa atual do formulário
   const renderStep = () => {
+    if (currentStep === 1 && currentUser?.isAnonymous) {
+      return (
+        <div className="form-step">
+          <h3>Usuário autenticado</h3>
+          <p>Bem-vindo, usuário anônimo!</p>
+          <div className="check-animation">✔</div>
+        </div>
+      );
+    }
+    
     switch(currentStep) {
       case 1: // Cadastro/Identificação
         return (
@@ -361,7 +401,9 @@ const handleSubmitForm = async (e) => {
               
               <div 
                 className={`service-option ${serviceType === 'coletar' ? 'selected' : ''}`}
-                onClick={() => setServiceType('coletar')}
+                onClick={() => {
+                  setServiceType('coletar'); // Correctly set serviceType to 'coletar'
+                }}
               >
                 <FaTrash size={24} />
                 <p>Solicitar coleta de resíduos</p>
